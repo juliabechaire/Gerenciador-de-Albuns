@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Rodar Projeto POO",
+            "request": "launch",
+            "mainClass": "Main",
+            "vmArgs": "--module-path \"C:/javafx-sdk-21.0.11/lib\" --add-modules javafx.controls,javafx.fxml"
+        }
+    ]
+}
