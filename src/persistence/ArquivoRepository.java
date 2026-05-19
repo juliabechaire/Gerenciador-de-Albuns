@@ -1,29 +1,36 @@
 package persistence;
 
+import model.Item;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
-import model.Album;
 
 public class ArquivoRepository {
-    // Altera o caminho para salvar diretamente dentro da sua pasta "dados" que aparece no print
-    private static final String CAMINHO_ARQUIVO = "dados/biblioteca.dat";
+    private static final String DIRECTORY_PATH = "dados";
+    private static final String FILE_PATH = DIRECTORY_PATH + "/biblioteca.dat";
 
-    public void salvar(List<Album> biblioteca) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(CAMINHO_ARQUIVO);
+    public void salvar(List<Item> biblioteca) throws IOException {
+        File diretorio = new File(DIRECTORY_PATH);
+        if (!diretorio.exists()) {
+            diretorio.mkdirs();
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(FILE_PATH);
              ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(biblioteca);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public List<Album> carregar() throws IOException, ClassNotFoundException {
-        File arquivo = new File(CAMINHO_ARQUIVO);
+    public List<Item> carregar() throws IOException, ClassNotFoundException {
+        File arquivo = new File(FILE_PATH);
         if (!arquivo.exists()) {
-            return null;
+            return new ArrayList<>(); // Retorna uma lista vazia pronta para uso
         }
+
         try (FileInputStream fis = new FileInputStream(arquivo);
              ObjectInputStream ois = new ObjectInputStream(fis)) {
-            return (List<Album>) ois.readObject();
+            return (List<Item>) ois.readObject();
         }
     }
 }
