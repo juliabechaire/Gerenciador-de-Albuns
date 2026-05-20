@@ -77,4 +77,6 @@ public abstract class Item implements Serializable, Validavel, Compartilhavel, A
     public void setVisto(boolean visto) { this.visto = visto; }
     public boolean isNaMinhaLista() { return naMinhaLista; }
     public void setNaMinhaLista(boolean naMinhaLista) { this.naMinhaLista = naMinhaLista; }
+    public void setNota(int nota) { this.nota = nota; }
+    public void setResenha(String resenha) { this.resenha = resenha; }
 }
