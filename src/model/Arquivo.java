@@ -18,8 +18,10 @@ public abstract class Arquivo implements Avaliavel {
         this.link = link;
     }
 
-    public abstract void exibirInformacoes();
+    public abstract String exibirInformacoes();
 
+
+    ////getter e setters obrigatorios
     public String getNome() {
         return nome;
     }
@@ -68,12 +70,19 @@ public abstract class Arquivo implements Avaliavel {
         this.tipo = tipo;
     }
 
-    public void getNota(int nota) {
+    ///parte da interface avaliavel
+    public void avaliar(int nota, String comentario) {
         this.nota = nota;
-    }
-    public void getComentario(String comentario) {
         this.comentario = comentario;
+    }   
+
+    public int getNota() {
+        return nota;
+    }   
+    public String getComentario() {
+        return comentario;
     }
+
 
 
 }

@@ -27,29 +27,29 @@ public class Album extends Arquivo{
         return duracao;  
     }
 
-    public String setBanda(String banda) {
-        return this.banda = banda;
+    public void setBanda(String banda) {
+        this.banda = banda;
     }   
-    public String setMelhorFaixa(String melhorFaixa) {
-        return this.melhorFaixa = melhorFaixa;
+    public void setMelhorFaixa(String melhorFaixa) {
+        this.melhorFaixa = melhorFaixa;
     }
-    public String setLinkFaixa(String linkFaixa) {
-        return this.linkFaixa = linkFaixa;
+    public void setLinkFaixa(String linkFaixa) {
+        this.linkFaixa = linkFaixa;
     }   
-    public int setDuracao(int duracao) {
-        return this.duracao = duracao;  
+    public void setDuracao(int duracao) {
+        this.duracao = duracao;  
      }          
 
      @Override
-     public void exibirInformacoes() {
-         System.out.println("Nome: " + getNome());
-         System.out.println("Banda: " + getBanda());
-         System.out.println("Ano de Lançamento: " + getAnoLancamento());
-         System.out.println("Gênero: " + getGenero());
-         System.out.println("Duração: " + getDuracao() + " minutos");
-         System.out.println("Melhor Faixa: " + getMelhorFaixa());
-         System.out.println("Link da Melhor Faixa: " + getLinkFaixa());
-         System.out.println("Link do Álbum: " + getLink());
-     }  
+    public String exibirInformacoes() {
+        return "💿 Nome do Álbum: " + (getNome() == null || getNome().isEmpty() ? "Não informado" : getNome()) + "\n" +
+            "🎵 Artista/Banda: " + (getBanda() == null || getBanda().isEmpty() ? "Não informado" : getBanda()) + "\n" +
+            "📅 Ano de Lançamento: " + (getAnoLancamento() == 0 ? "Não informado" : getAnoLancamento()) + "\n" +
+            "🏷️ Gênero: " + (getGenero() == null || getGenero().isEmpty() ? "Não informado" : getGenero()) + "\n" +
+            "⏱️ Duração: " + (getDuracao() == 0 ? "Não informado" : getDuracao() + " minutos") + "\n" +
+            "⭐ Melhor Faixa: " + (getMelhorFaixa() == null || getMelhorFaixa().isEmpty() ? "Não informado" : getMelhorFaixa()) + "\n" +
+            "🔗 Link da Faixa: " + (getLinkFaixa() == null || getLinkFaixa().isEmpty() ? "Não informado" : getLinkFaixa()) + "\n" +
+            "🌍 Link do Álbum: " + (getLink() == null || getLink().isEmpty() ? "Não informado" : getLink());
+    } 
 
 }

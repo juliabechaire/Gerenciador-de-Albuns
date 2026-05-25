@@ -1,6 +1,8 @@
 package model;
 
 public interface Avaliavel {
-    void getNota(int nota);
-    void getComentario(String comentario);
+    void avaliar(int nota, String comentario);
+    int getNota();
+    String getComentario();
+
 }

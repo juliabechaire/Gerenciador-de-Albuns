@@ -1,6 +1,6 @@
 package model;
 
-public class Filme extends Arquivo {
+public class Filme extends Arquivo implements Status {
     private String diretor;
     private int duracao;
     private String elencoPrincipal;
@@ -25,28 +25,40 @@ public class Filme extends Arquivo {
     public int getStatus() {
         return status;
     }       
-    public String setDiretor(String diretor) {
-        return this.diretor = diretor;
+    public void setDiretor(String diretor) {
+        this.diretor = diretor;
     }   
-    public int setDuracao(int duracao) {
-        return this.duracao = duracao;
+    public void setDuracao(int duracao) {
+        this.duracao = duracao;
     }
-    public String setElencoPrincipal(String elencoPrincipal) {
-        return this.elencoPrincipal = elencoPrincipal;
+    public void setElencoPrincipal(String elencoPrincipal) {
+        this.elencoPrincipal = elencoPrincipal;
     }   
-    public int setStatus(int status) {
-        return this.status = status;
+    public void setStatus(int status) {
+        this.status = status;
     }   
 
     @Override
-    public void exibirInformacoes() {
-        System.out.println("Nome: " + getNome());
-        System.out.println("Diretor: " + getDiretor());
-        System.out.println("Ano de Lançamento: " + getAnoLancamento());
-        System.out.println("Gênero: " + getGenero());
-        System.out.println("Duração: " + getDuracao() + " minutos");
-        System.out.println("Elenco Principal: " + getElencoPrincipal());
-        System.out.println("Status: " + getStatus()+ "%");
-        System.out.println("Link do Filme: " + getLink());
-    }   
+    public String exibirInformacoes() {
+        return "🎬 Nome do Filme: " + (getNome() == null || getNome().isEmpty() ? "Não informado" : getNome()) + "\n" +
+            "🎥 Diretor: " + (getDiretor() == null || getDiretor().isEmpty() ? "Não informado" : getDiretor()) + "\n" +
+            "📅 Ano de Lançamento: " + (getAnoLancamento() == 0 ? "Não informado" : getAnoLancamento()) + "\n" +
+            "🏷️ Gênero: " + (getGenero() == null || getGenero().isEmpty() ? "Não informado" : getGenero()) + "\n" +
+            "⏱️ Duração: " + (getDuracao() == 0 ? "Não informado" : getDuracao() + " minutos") + "\n" +
+            "👥 Elenco Principal: " + (getElencoPrincipal() == null || getElencoPrincipal().isEmpty() ? "Não informado" : getElencoPrincipal()) + "\n" +
+            "📊 Status de Reprodução: " + (getStatus() == 0 ? "Não assistido" : getStatus() + "% concluído") + "\n" +
+            "🔗 Link do Filme: " + (getLink() == null || getLink().isEmpty() ? "Não informado" : getLink());
+    }  
+
+    public String mostrarStatus() {
+        if (getStatus() == 0) {
+            return "Não assistido";
+        } else if (getStatus() > 0 && getStatus() < 100) {
+            return getStatus() + "% concluído";
+        } else if (getStatus() == 100) {
+            return "Concluído";
+        } else {
+            return "Status inválido";
+        }
+    }
 }

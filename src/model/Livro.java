@@ -1,6 +1,6 @@
 package model;
 
-public class Livro extends Arquivo {
+public class Livro extends Arquivo implements Status {
     private String autor;
     private int numeroPaginas;
     private int status=0; //em porcentagem
@@ -35,15 +35,27 @@ public class Livro extends Arquivo {
         this.status = status;
     }
 
+
     @Override
-    public void exibirInformacoes() {
-        System.out.println("Nome: " + getNome());
-        System.out.println("Autor: " + getAutor());
-        System.out.println("Ano de Lançamento: " + getAnoLancamento());
-        System.out.println("Gênero: " + getGenero());
-        System.out.println("Número de Páginas: " + getNumeroPaginas());
-        System.out.println("Status: " + getStatus()+ "%");
-        System.out.println("Link do Livro: " + getLink());
-    }   
+    public String exibirInformacoes() {
+        return "📚 Nome do Livro: " + (getNome() == null || getNome().isEmpty() ? "Não informado" : getNome()) + "\n" +
+                "✍️ Autor: " + (getAutor() == null || getAutor().isEmpty() ? "Não informado" : getAutor()) + "\n" +
+                "📅 Ano de Lançamento: " + (getAnoLancamento() == 0 ? "Não informado" : getAnoLancamento()) + "\n" +
+                "🏷️ Gênero: " + (getGenero() == null || getGenero().isEmpty() ? "Não informado" : getGenero()) + "\n" +
+                "📖 Número de Páginas: " + (getNumeroPaginas() == 0 ? "Não informado" : getNumeroPaginas()) + "\n" +
+                "📊 Status de Leitura: " + (getStatus() == 0 ? "Não iniciado" : getStatus() + "% concluído") + "\n" +
+                "🔗 Link do Livro: " + (getLink() == null || getLink().isEmpty() ? "Não informado" : getLink());
+        }
     
+    public String mostrarStatus() {
+        if (getStatus() == 0) {
+            return "Não iniciado";
+        } else if (getStatus() > 0 && getStatus() < 100) {
+            return getStatus() + "% concluído";
+        } else if (getStatus() == 100) {
+            return "Concluído";
+        } else {
+            return "Status inválido";
+        }
+    }
 }
