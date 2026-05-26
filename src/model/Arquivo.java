@@ -1,6 +1,7 @@
 package model;
+import java.io.Serializable;
 
-public abstract class Arquivo implements Avaliavel {
+public abstract class Arquivo implements Avaliavel, Serializable {
     private String nome;
     private int AnoLancamento;
     private String genero; //nao sei e é util mesmo
@@ -10,12 +11,12 @@ public abstract class Arquivo implements Avaliavel {
     public Integer nota= null;
     public String comentario="";  
 
-    public Arquivo(String nome, int anoLancamento, String genero, String imagem, String link) {
-        this.nome = nome;
-        this.AnoLancamento = anoLancamento;
-        this.genero = genero;
-        this.imagem = imagem;
-        this.link = link;
+    public Arquivo(String nome) {
+        this.nome=nome;
+        this.AnoLancamento=0;
+        this.genero="";
+        this.imagem="";
+        this.link="";
     }
 
     public abstract String exibirInformacoes();

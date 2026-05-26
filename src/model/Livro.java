@@ -5,10 +5,10 @@ public class Livro extends Arquivo implements Status {
     private int numeroPaginas;
     private int status=0; //em porcentagem
 
-    public Livro(String nome, int anoLancamento, String genero, String imagem, String link, String autor, int numeroPaginas) {
-        super(nome, anoLancamento, genero, imagem, link);
-        this.autor = autor;
-        this.numeroPaginas = numeroPaginas;
+    public Livro(String nome) {
+        super(nome);
+        this.autor = "Desconhecido";
+        this.numeroPaginas = 0;
     }
 
     public String getAutor() {

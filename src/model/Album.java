@@ -6,12 +6,12 @@ public class Album extends Arquivo{
     private String linkFaixa;
     private int duracao;
 
-    public Album(String nome, int anoLancamento, String genero, String imagem, String link, String banda, String melhorFaixa, String linkFaixa, int duracao) {
-        super(nome, anoLancamento, genero, imagem, link);
-        this.banda = banda;
-        this.melhorFaixa = melhorFaixa;
-        this.linkFaixa = linkFaixa;
-        this.duracao = duracao;
+    public Album(String nome) {
+        super(nome);
+        this.banda = "Desconhecido";
+        this.melhorFaixa = "Não informado";
+        this.linkFaixa = "";
+        this.duracao = 0;
     }
 
     public String getBanda() {

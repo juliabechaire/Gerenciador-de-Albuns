@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "TelaPrincipal",
+            "request": "launch",
+            "mainClass": "view.TelaPrincipal",
+            "projectName": "POO_fb4d7483"
+        },
+        {
+            "type": "java",
             "name": "Rodar Projeto POO",
             "request": "launch",
             "mainClass": "Main",

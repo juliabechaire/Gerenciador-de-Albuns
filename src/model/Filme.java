@@ -6,11 +6,11 @@ public class Filme extends Arquivo implements Status {
     private String elencoPrincipal;
     private int status=0; //em porcentagem
 
-    public Filme(String nome, int anoLancamento, String genero, String imagem, String link, String diretor, int duracao, String elencoPrincipal) {
-        super(nome, anoLancamento, genero, imagem, link);
-        this.diretor = diretor;
-        this.duracao = duracao;
-        this.elencoPrincipal = elencoPrincipal;
+    public Filme(String nome) {
+        super(nome);
+        this.diretor = "Desconhecido";
+        this.duracao = 0;
+        this.elencoPrincipal = "";
     }   
 
     public String getDiretor() {
