@@ -78,8 +78,9 @@ public abstract class Arquivo implements Avaliavel, Serializable {
     }   
 
     public int getNota() {
-        return nota;
-    }   
+    return nota == null ? 0 : nota;
+    }  
+    
     public String getComentario() {
         return comentario;
     }
