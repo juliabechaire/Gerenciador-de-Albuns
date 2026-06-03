@@ -1,6 +1,7 @@
 package controller;
 import model.Arquivo;
 import persistence.ArquivoRepository;
+import exception.ArquivoNaoEncontradoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,9 @@ public class ArquivoController {
         repo.salvar(this.biblioteca);
     }
 
-    public List<Arquivo> buscar_palavra_chave(String palavra)
+    // Lança ArquivoNaoEncontradoException se o termo não corresponder a nenhum item
+    // Exceção propagada daqui (controller) para ser tratada na view
+    public List<Arquivo> buscar_palavra_chave(String palavra) throws ArquivoNaoEncontradoException
     {
         if(palavra == null || palavra.isEmpty())
         {
@@ -43,19 +46,35 @@ public class ArquivoController {
             }
         }
 
+        // Lançada na camada controller quando nenhum resultado é encontrado
+        if(filtrados.isEmpty())
+        {
+            throw new ArquivoNaoEncontradoException(palavra);
+        }
+
         return filtrados;
     }
 
-    public void remover_busca(String titulo) throws IOException
+    // Lança ArquivoNaoEncontradoException se o título não existir na biblioteca
+    public void remover_busca(String titulo) throws IOException, ArquivoNaoEncontradoException
     {
+        boolean encontrado = false;
         for(int i = this.biblioteca.size() - 1; i >= 0; i--)
         {
             if(this.biblioteca.get(i).getNome().equalsIgnoreCase(titulo.trim()))
             {
                 this.biblioteca.remove(i);
+                encontrado = true;
                 break;
             }
         }
+
+        // Lançada na camada controller quando o item não existe para remoção
+        if(!encontrado)
+        {
+            throw new ArquivoNaoEncontradoException(titulo);
+        }
+
         repo.salvar(this.biblioteca);
     }
 
@@ -72,11 +91,8 @@ public class ArquivoController {
         repo.salvar(this.biblioteca);
     }
 
-    //metodo auxiliar pra view pegar a lista completa
+    // Método auxiliar para a view obter a lista completa
     public List<Arquivo> getBiblioteca() {
         return this.biblioteca;
     }   
-
-    
-
 }

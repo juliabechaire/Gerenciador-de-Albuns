@@ -3,6 +3,7 @@ package view;
 import controller.ArquivoController;
 import model.*;
 import exception.DadosInvalidosException;
+import exception.ArquivoNaoEncontradoException;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -160,7 +161,7 @@ public class TelaPrincipal extends Application {
             List<Arquivo> avaliados = cerebro.getBiblioteca().stream()
                 .filter(a -> a.getNota() > 0)
                 .collect(Collectors.toList());
-            containerCentral.getChildren().clear();
+            containerCentral.getChildren().clear(); //limpa a parte central
             if (avaliados.isEmpty()) {
                 Label msg = new Label("Nenhum item avaliado ainda. Abra um item e clique em ⭐ Avaliar.");
                 msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #888; -fx-padding: 20;");
@@ -198,7 +199,7 @@ public class TelaPrincipal extends Application {
     //  RENDERIZAÇÃO
     // =====================================================================
     private void renderizarTodasAsSecoes(List<Arquivo> lista) {
-        containerCentral.getChildren().clear();
+        containerCentral.getChildren().clear(); //limpa a tela atual para renderizar a nova lista
 
         if (lista.isEmpty()) {
             Label msg = new Label("Nenhum arquivo encontrado.");
@@ -454,11 +455,10 @@ public class TelaPrincipal extends Application {
                 new Alert(Alert.AlertType.WARNING, "Digite um título para buscar.").showAndWait();
                 return;
             }
-            List<Arquivo> encontrados = cerebro.buscar_palavra_chave(termo);
-            listaResultados.getChildren().clear();
-            if (encontrados.isEmpty()) {
-                listaResultados.getChildren().add(new Label("Nenhum resultado encontrado."));
-            } else {
+            // ArquivoNaoEncontradoException propagada do controller e tratada aqui na view
+            try {
+                List<Arquivo> encontrados = cerebro.buscar_palavra_chave(termo);
+                listaResultados.getChildren().clear();
                 listaResultados.getChildren().add(new Label("Clique no item que deseja remover:"));
                 for (Arquivo a : encontrados) {
                     String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
@@ -477,14 +477,19 @@ public class TelaPrincipal extends Application {
                                     cerebro.remover_busca(a.getNome());
                                     voltarParaBiblioteca();
                                     popup.close();
+                                } catch (ArquivoNaoEncontradoException exNF) {
+                                    new Alert(Alert.AlertType.WARNING, exNF.getMessage()).showAndWait();
                                 } catch (IOException ex) {
-                                    new Alert(Alert.AlertType.ERROR, "Erro ao remover.").showAndWait();
+                                    new Alert(Alert.AlertType.ERROR, "Erro ao remover o arquivo.").showAndWait();
                                 }
                             }
                         });
                     });
                     listaResultados.getChildren().add(btnItem);
                 }
+            } catch (ArquivoNaoEncontradoException exNF) {
+                listaResultados.getChildren().clear();
+                listaResultados.getChildren().add(new Label("❌ " + exNF.getMessage()));
             }
         });
 
@@ -528,11 +533,10 @@ public class TelaPrincipal extends Application {
                 new Alert(Alert.AlertType.WARNING, "Digite um título para buscar.").showAndWait();
                 return;
             }
-            List<Arquivo> encontrados = cerebro.buscar_palavra_chave(termo);
-            listaResultados.getChildren().clear();
-            if (encontrados.isEmpty()) {
-                listaResultados.getChildren().add(new Label("Nenhum resultado encontrado."));
-            } else {
+            // ArquivoNaoEncontradoException propagada do controller e tratada aqui na view
+            try {
+                List<Arquivo> encontrados = cerebro.buscar_palavra_chave(termo);
+                listaResultados.getChildren().clear();
                 listaResultados.getChildren().add(new Label("Clique no item que deseja editar:"));
                 for (Arquivo a : encontrados) {
                     String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
@@ -546,6 +550,9 @@ public class TelaPrincipal extends Application {
                     });
                     listaResultados.getChildren().add(btnItem);
                 }
+            } catch (ArquivoNaoEncontradoException exNF) {
+                listaResultados.getChildren().clear();
+                listaResultados.getChildren().add(new Label("❌ " + exNF.getMessage()));
             }
         });
 
@@ -821,7 +828,15 @@ public class TelaPrincipal extends Application {
         }
         // Garante que o containerCentral é o que está visível
         voltarParaBiblioteca();
-        renderizarTodasAsSecoes(cerebro.buscar_palavra_chave(termo));
+        // ArquivoNaoEncontradoException propagada do controller e tratada aqui na view
+        try {
+            renderizarTodasAsSecoes(cerebro.buscar_palavra_chave(termo));
+        } catch (ArquivoNaoEncontradoException ex) {
+            containerCentral.getChildren().clear();
+            Label msg = new Label("❌ " + ex.getMessage());
+            msg.setStyle("-fx-font-size: 13px; -fx-text-fill: #c0392b; -fx-padding: 20;");
+            containerCentral.getChildren().add(msg);
+        }
     }
 
     // =====================================================================
