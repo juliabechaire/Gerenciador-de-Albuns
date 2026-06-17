@@ -14,6 +14,11 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -28,7 +33,10 @@ public class TelaPrincipal extends Application {
     private VBox containerCentral;
     private TextField txtBusca;
     private Stage palco;
-    private BorderPane layoutRaiz;   // guardamos a referência para reutilizar a mesma Scene
+    private BorderPane layoutRaiz;
+
+    // Filtro atual selecionado no MenuButton
+    private String filtroAtual = "Todos";
 
     private final Random random = new Random();
 
@@ -59,6 +67,16 @@ public class TelaPrincipal extends Application {
 
     private static final String IMG_PLACEHOLDER = "https://placehold.co/140x160?text=Sem+Capa";
 
+    // Paleta de cores centralizada
+    private static final String COR_FUNDO        = "#1a1a2e";
+    private static final String COR_SUPERFICIE   = "#16213e";
+    private static final String COR_CARD         = "#0f3460";
+    private static final String COR_ACENTO       = "#e94560";
+    private static final String COR_ACENTO2      = "#533483";
+    private static final String COR_TEXTO        = "#eaeaea";
+    private static final String COR_TEXTO_SUAVE  = "#a0aec0";
+    private static final String COR_DOURADO      = "#f6c90e";
+
     @Override
     public void start(Stage palcoPrincipal) {
         this.palco = palcoPrincipal;
@@ -66,8 +84,8 @@ public class TelaPrincipal extends Application {
         palcoPrincipal.setTitle("Cofre Cultural v1.0");
 
         layoutRaiz = new BorderPane();
-        layoutRaiz.setPadding(new Insets(12));
-        layoutRaiz.setStyle("-fx-background-color: #f0f2f5;");
+        layoutRaiz.setPadding(new Insets(14));
+        layoutRaiz.setStyle("-fx-background-color: " + COR_FUNDO + ";");
 
         layoutRaiz.setTop(criarBarraSuperior());
 
@@ -76,108 +94,119 @@ public class TelaPrincipal extends Application {
 
         ScrollPane painelRolagem = new ScrollPane(containerCentral);
         painelRolagem.setFitToWidth(true);
-        painelRolagem.setStyle("-fx-background-color: transparent; -fx-background: #f0f2f5;");
+        painelRolagem.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         layoutRaiz.setCenter(painelRolagem);
 
         layoutRaiz.setBottom(criarBarraInferior());
 
         renderizarBiblioteca();
 
-        // UMA única Scene, reutilizada sempre — troca só o centro (layoutRaiz.setCenter)
-        Scene cena = new Scene(layoutRaiz, 900, 600);
+        Scene cena = new Scene(layoutRaiz, 960, 640);
         palcoPrincipal.setScene(cena);
         palcoPrincipal.show();
     }
 
     // =====================================================================
-    //  Volta para a vista principal (carrossel)
+    //  VOLTAR PARA BIBLIOTECA
     // =====================================================================
     private void voltarParaBiblioteca() {
-        // Recoloca o ScrollPane com os cards no centro
         containerCentral = new VBox(20);
         containerCentral.setPadding(new Insets(10, 0, 10, 0));
 
         ScrollPane painelRolagem = new ScrollPane(containerCentral);
         painelRolagem.setFitToWidth(true);
-        painelRolagem.setStyle("-fx-background-color: transparent; -fx-background: #f0f2f5;");
+        painelRolagem.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         layoutRaiz.setCenter(painelRolagem);
         renderizarBiblioteca();
     }
 
     private void renderizarBiblioteca() {
-        renderizarTodasAsSecoes(cerebro.getBiblioteca());
+        List<Arquivo> lista = cerebro.getBiblioteca();
+        switch (filtroAtual) {
+            case "Filmes":
+                renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Filme).collect(Collectors.toList()));
+                break;
+            case "Álbuns":
+                renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Album).collect(Collectors.toList()));
+                break;
+            case "Livros":
+                renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Livro).collect(Collectors.toList()));
+                break;
+            default:
+                renderizarTodasAsSecoes(lista);
+        }
     }
 
     // =====================================================================
     //  BARRA SUPERIOR
     // =====================================================================
     private VBox criarBarraSuperior() {
-        VBox painelTopo = new VBox(8);
-        painelTopo.setPadding(new Insets(0, 0, 10, 0));
+        VBox painelTopo = new VBox(10);
+        painelTopo.setPadding(new Insets(0, 0, 12, 0));
 
+        // Título do app
+        Label lblApp = new Label("🎬 Cofre Cultural");
+        lblApp.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + COR_ACENTO + ";");
+
+        // Linha de busca
         HBox linhaBusca = new HBox(8);
         linhaBusca.setAlignment(Pos.CENTER_LEFT);
 
         txtBusca = new TextField();
         txtBusca.setPromptText("Buscar pelo título...");
-        txtBusca.setPrefWidth(240);
+        txtBusca.setPrefWidth(260);
+        txtBusca.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-text-fill: " + COR_TEXTO
+                        + "; -fx-prompt-text-fill: " + COR_TEXTO_SUAVE + "; -fx-border-color: " + COR_ACENTO2
+                        + "; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10 6 10;");
         txtBusca.setOnAction(e -> acaoBuscar());
 
-        Button btnBuscar = new Button("🔍 Buscar");
-        btnBuscar.setStyle("-fx-background-color: #3182ce; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnBuscar = estilizarBotao("🔍 Buscar", COR_ACENTO2, COR_TEXTO);
         btnBuscar.setOnAction(e -> acaoBuscar());
 
-        linhaBusca.getChildren().addAll(txtBusca, btnBuscar);
+        // ── MenuButton de filtro por categoria (substituí os 4 botões) ──
+        MenuButton menuFiltro = new MenuButton("🌐 Todos ▾");
+        menuFiltro.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
+                          + "; -fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 6;"
+                          + "-fx-background-radius: 6; -fx-font-weight: bold; -fx-padding: 6 12 6 12;");
 
-        HBox linhaFiltros = new HBox(8);
-        linhaFiltros.setPadding(new Insets(3, 0, 0, 0));
-        linhaFiltros.setAlignment(Pos.CENTER_LEFT);
+        MenuItem miTodos  = new MenuItem("🌐 Todos");
+        MenuItem miFilmes = new MenuItem("🎬 Filmes");
+        MenuItem miAlbuns = new MenuItem("🎵 Álbuns");
+        MenuItem miLivros = new MenuItem("📚 Livros");
 
-        Button btnTodos    = new Button("🌐 Todos");
-        Button btnFilmes   = new Button("🎬 Filmes");
-        Button btnAlbuns   = new Button("🎵 Álbuns");
-        Button btnLivros   = new Button("📚 Livros");
+        miTodos.setOnAction(e  -> { filtroAtual = "Todos";  menuFiltro.setText("🌐 Todos ▾");  txtBusca.clear(); voltarParaBiblioteca(); });
+        miFilmes.setOnAction(e -> { filtroAtual = "Filmes"; menuFiltro.setText("🎬 Filmes ▾"); voltarParaBiblioteca(); });
+        miAlbuns.setOnAction(e -> { filtroAtual = "Álbuns"; menuFiltro.setText("🎵 Álbuns ▾"); voltarParaBiblioteca(); });
+        miLivros.setOnAction(e -> { filtroAtual = "Livros"; menuFiltro.setText("📚 Livros ▾"); voltarParaBiblioteca(); });
 
-        Button btnAvaliados = new Button("⭐ Avaliados");
-        btnAvaliados.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
+        menuFiltro.getItems().addAll(miTodos, miFilmes, miAlbuns, miLivros);
 
-        Button btnEditar  = new Button("✏️ Editar");
-        btnEditar.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        Button btnRemover = new Button("🗑️ Remover");
-        btnRemover.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        btnTodos.setOnAction(e -> { txtBusca.clear(); voltarParaBiblioteca(); });
-
-        btnFilmes.setOnAction(e -> renderizarSecaoUnica("🎬 Filmes",
-            cerebro.getBiblioteca().stream().filter(a -> a instanceof Filme).collect(Collectors.toList())));
-        btnAlbuns.setOnAction(e -> renderizarSecaoUnica("🎵 Álbuns",
-            cerebro.getBiblioteca().stream().filter(a -> a instanceof Album).collect(Collectors.toList())));
-        btnLivros.setOnAction(e -> renderizarSecaoUnica("📚 Livros",
-            cerebro.getBiblioteca().stream().filter(a -> a instanceof Livro).collect(Collectors.toList())));
+        // Botões de ação
+        Button btnAvaliados = estilizarBotao("⭐ Avaliados", COR_DOURADO, "#1a1a2e");
+        Button btnEditar    = estilizarBotao("✏️ Editar",   "#3498db",   COR_TEXTO);
+        Button btnRemover   = estilizarBotao("🗑️ Remover",  COR_ACENTO,  COR_TEXTO);
 
         btnAvaliados.setOnAction(e -> {
             List<Arquivo> avaliados = cerebro.getBiblioteca().stream()
                 .filter(a -> a.getNota() > 0)
                 .collect(Collectors.toList());
-            containerCentral.getChildren().clear(); //limpa a parte central
+            containerCentral.getChildren().clear();
             if (avaliados.isEmpty()) {
                 Label msg = new Label("Nenhum item avaliado ainda. Abra um item e clique em ⭐ Avaliar.");
-                msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #888; -fx-padding: 20;");
+                msg.setStyle("-fx-font-size: 14px; -fx-text-fill: " + COR_TEXTO_SUAVE + "; -fx-padding: 20;");
                 containerCentral.getChildren().add(msg);
             } else {
-                renderizarTodasAsSecoes(avaliados);
+                mostrarPainelAvaliados(avaliados);
             }
         });
 
-        btnEditar.setOnAction(e -> abrirFluxoEditarPorBusca());
+        btnEditar.setOnAction(e  -> abrirFluxoEditarPorBusca());
         btnRemover.setOnAction(e -> abrirFluxoRemoverPorBusca());
 
-        linhaFiltros.getChildren().addAll(btnTodos, btnFilmes, btnAlbuns, btnLivros,
-                                          btnAvaliados, btnEditar, btnRemover);
+        linhaBusca.getChildren().addAll(menuFiltro, txtBusca, btnBuscar, btnAvaliados, btnEditar, btnRemover);
 
-        painelTopo.getChildren().addAll(linhaBusca, linhaFiltros);
+        painelTopo.getChildren().addAll(lblApp, linhaBusca);
         return painelTopo;
     }
 
@@ -188,8 +217,7 @@ public class TelaPrincipal extends Application {
         HBox barra = new HBox();
         barra.setPadding(new Insets(10, 0, 0, 0));
 
-        Button btnAdicionar = new Button("➕ Adicionar Nova Mídia");
-        btnAdicionar.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16 8 16;");
+        Button btnAdicionar = estilizarBotao("➕ Adicionar Nova Mídia", "#27ae60", COR_TEXTO);
         btnAdicionar.setOnAction(e -> abrirPopUpCadastro());
         barra.getChildren().add(btnAdicionar);
         return barra;
@@ -199,11 +227,11 @@ public class TelaPrincipal extends Application {
     //  RENDERIZAÇÃO
     // =====================================================================
     private void renderizarTodasAsSecoes(List<Arquivo> lista) {
-        containerCentral.getChildren().clear(); //limpa a tela atual para renderizar a nova lista
+        containerCentral.getChildren().clear();
 
         if (lista.isEmpty()) {
             Label msg = new Label("Nenhum arquivo encontrado.");
-            msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #888; -fx-padding: 20;");
+            msg.setStyle("-fx-font-size: 14px; -fx-text-fill: " + COR_TEXTO_SUAVE + "; -fx-padding: 20;");
             containerCentral.getChildren().add(msg);
             return;
         }
@@ -217,22 +245,11 @@ public class TelaPrincipal extends Application {
         if (!livros.isEmpty()) containerCentral.getChildren().add(criarSecaoHorizontal("📚 Livros", livros));
     }
 
-    private void renderizarSecaoUnica(String titulo, List<Arquivo> lista) {
-        containerCentral.getChildren().clear();
-        if (lista.isEmpty()) {
-            Label msg = new Label("Nenhum item nesta categoria.");
-            msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #888; -fx-padding: 20;");
-            containerCentral.getChildren().add(msg);
-        } else {
-            containerCentral.getChildren().add(criarSecaoHorizontal(titulo, lista));
-        }
-    }
-
     private VBox criarSecaoHorizontal(String tituloSecao, List<Arquivo> itens) {
-        VBox secao = new VBox(5);
+        VBox secao = new VBox(6);
 
         Label lbl = new Label(tituloSecao);
-        lbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2d3748;");
+        lbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
 
         HBox estrutura = new HBox(5);
         estrutura.setAlignment(Pos.CENTER);
@@ -251,8 +268,8 @@ public class TelaPrincipal extends Application {
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         HBox.setHgrow(scroll, Priority.ALWAYS);
 
-        Button btnEsq = new Button("◀");
-        Button btnDir = new Button("▶");
+        Button btnEsq = estilizarBotao("◀", COR_CARD, COR_TEXTO);
+        Button btnDir = estilizarBotao("▶", COR_CARD, COR_TEXTO);
         btnEsq.setOnAction(e -> scroll.setHvalue(Math.max(0, scroll.getHvalue() - 0.25)));
         btnDir.setOnAction(e -> scroll.setHvalue(Math.min(1, scroll.getHvalue() + 0.25)));
 
@@ -262,128 +279,99 @@ public class TelaPrincipal extends Application {
     }
 
     // =====================================================================
-    //  CARD MINIATURA — clique abre o painel de detalhes NO CENTRO
+    //  CARD MINIATURA — só imagem + título, sem espaço em branco
     // =====================================================================
     private VBox criarCardMiniatura(Arquivo arquivo) {
-        VBox card = new VBox(6);
+        VBox card = new VBox(5);
         card.setAlignment(Pos.TOP_CENTER);
-        card.setPadding(new Insets(8));
-        card.setPrefSize(150, 210);
-        card.setMinSize(150, 210);
-        card.setMaxSize(150, 210);
-        card.setStyle("-fx-border-color: #cbd5e1; -fx-border-radius: 8; "
-                    + "-fx-background-color: white; -fx-background-radius: 8; -fx-cursor: hand;");
+        card.setPadding(new Insets(6));
 
         // Imagem
         ImageView capa = new ImageView();
-        capa.setFitWidth(130);
-        capa.setFitHeight(140);
-        capa.setPreserveRatio(true);
-        carregarImagem(capa, arquivo.getImagem(), 130, 140);
+        capa.setFitWidth(120);
+        capa.setFitHeight(155);
+        capa.setPreserveRatio(false); // preenche o espaço sem espaço em branco
+        carregarImagem(capa, arquivo.getImagem(), 120, 155);
 
-        // Título
+        // Título — wrapping limitado a 2 linhas
         Label lblTitulo = new Label(arquivo.getNome() != null ? arquivo.getNome() : "Sem título");
-        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-alignment: center; -fx-text-fill: #2d3748;");
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-alignment: center;"
+                         + "-fx-text-fill: " + COR_TEXTO + ";");
         lblTitulo.setWrapText(true);
-        lblTitulo.setMaxWidth(135);
+        lblTitulo.setMaxWidth(120);
         lblTitulo.setAlignment(Pos.CENTER);
 
         card.getChildren().addAll(capa, lblTitulo);
 
-        // CLIQUE: substitui apenas o centro do layoutRaiz pelo painel de detalhes
-        card.setOnMouseClicked(ev -> mostrarPainelDetalhes(arquivo));
+        // Tamanho ajustado ao conteúdo (sem altura fixa que cria espaço vazio)
+        card.setPrefWidth(136);
+        card.setMaxWidth(136);
+        card.setStyle("-fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 8;"
+                    + "-fx-background-color: " + COR_CARD + "; -fx-background-radius: 8; -fx-cursor: hand;");
 
-        // Efeito hover para deixar mais claro que é clicável
+        card.setOnMouseClicked(ev -> mostrarPainelDetalhes(arquivo));
         card.setOnMouseEntered(ev -> card.setStyle(
-            "-fx-border-color: #3182ce; -fx-border-radius: 8; "
-            + "-fx-background-color: #ebf8ff; -fx-background-radius: 8; -fx-cursor: hand;"));
+            "-fx-border-color: " + COR_ACENTO + "; -fx-border-radius: 8;"
+            + "-fx-background-color: " + COR_ACENTO2 + "; -fx-background-radius: 8; -fx-cursor: hand;"));
         card.setOnMouseExited(ev -> card.setStyle(
-            "-fx-border-color: #cbd5e1; -fx-border-radius: 8; "
-            + "-fx-background-color: white; -fx-background-radius: 8; -fx-cursor: hand;"));
+            "-fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 8;"
+            + "-fx-background-color: " + COR_CARD + "; -fx-background-radius: 8; -fx-cursor: hand;"));
 
         return card;
     }
 
     // =====================================================================
-    //  PAINEL DE DETALHES — substitui o centro da tela (sem trocar Scene)
+    //  PAINEL DE DETALHES — usa exibirInformacoes() de cada classe
     // =====================================================================
     private void mostrarPainelDetalhes(Arquivo arquivo) {
         BorderPane painelDetalhes = new BorderPane();
         painelDetalhes.setPadding(new Insets(20));
-        painelDetalhes.setStyle("-fx-background-color: #f8f9fa;");
+        painelDetalhes.setStyle("-fx-background-color: " + COR_FUNDO + ";");
 
-        // --- TOPO: botão Voltar ---
-        Button btnVoltar = new Button("⬅ Voltar para a Biblioteca");
-        btnVoltar.setStyle("-fx-font-weight: bold; -fx-padding: 6 14 6 14; -fx-cursor: hand;");
+        Button btnVoltar = estilizarBotao("⬅ Voltar", COR_CARD, COR_TEXTO);
         btnVoltar.setOnAction(e -> voltarParaBiblioteca());
         painelDetalhes.setTop(btnVoltar);
-        BorderPane.setMargin(btnVoltar, new Insets(0, 0, 12, 0));
+        BorderPane.setMargin(btnVoltar, new Insets(0, 0, 14, 0));
 
-        // --- CENTRO: conteúdo ---
-        VBox conteudo = new VBox(14);
-        conteudo.setPadding(new Insets(10, 0, 0, 0));
+        VBox conteudo = new VBox(16);
+        conteudo.setPadding(new Insets(6, 0, 0, 0));
 
-        // Título do item
+        // Título
         Label lblNome = new Label(safe(arquivo.getNome(), "Sem título"));
-        lblNome.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a202c;");
+        lblNome.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
         lblNome.setWrapText(true);
 
-        // Linha: imagem à esquerda + metadados à direita
-        HBox linhaInfos = new HBox(20);
+        // Linha: imagem + informações (usando exibirInformacoes() da classe)
+        HBox linhaInfos = new HBox(22);
         linhaInfos.setAlignment(Pos.TOP_LEFT);
 
         ImageView grandeCapa = new ImageView();
         grandeCapa.setFitWidth(160);
-        grandeCapa.setFitHeight(200);
-        grandeCapa.setPreserveRatio(true);
-        carregarImagem(grandeCapa, arquivo.getImagem(), 160, 200);
+        grandeCapa.setFitHeight(210);
+        grandeCapa.setPreserveRatio(false);
+        carregarImagem(grandeCapa, arquivo.getImagem(), 160, 210);
 
-        VBox metadados = new VBox(8);
-        metadados.setStyle("-fx-background-color: #edf2f7; -fx-padding: 15; -fx-background-radius: 8;");
+        // Bloco de informações — lê direto de exibirInformacoes()
+        VBox blocoInfos = new VBox(6);
+        blocoInfos.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-padding: 14;"
+                          + "-fx-background-radius: 10;");
+        blocoInfos.setPrefWidth(480);
 
-        // Determina a info específica do tipo
-        String infoEspecifica;
-        if (arquivo instanceof Album) {
-            infoEspecifica = "🎤 Banda/Artista: " + safe(((Album) arquivo).getBanda(), "Não informado");
-        } else if (arquivo instanceof Filme) {
-            infoEspecifica = "🎥 Diretor: " + safe(((Filme) arquivo).getDiretor(), "Não informado");
-        } else if (arquivo instanceof Livro) {
-            infoEspecifica = "✍️ Autor: " + safe(((Livro) arquivo).getAutor(), "Não informado");
-        } else {
-            infoEspecifica = "";
+        // Quebra o texto de exibirInformacoes() em linhas e cria um Label por linha
+        String[] linhas = arquivo.exibirInformacoes().split("\n");
+        for (String linha : linhas) {
+            Label l = new Label(linha);
+            l.setStyle("-fx-font-size: 13px; -fx-text-fill: " + COR_TEXTO + ";");
+            l.setWrapText(true);
+            blocoInfos.getChildren().add(l);
         }
 
-        metadados.getChildren().addAll(
-            labelInfo("📌 Tipo: ",   arquivo.getClass().getSimpleName()),
-            labelInfo("📅 Ano: ",    arquivo.getAnoLancamento() == 0 ? "Não informado" : String.valueOf(arquivo.getAnoLancamento())),
-            labelInfo("🏷️ Gênero: ", safe(arquivo.getGenero(), "Não informado")),
-            labelInfo("", infoEspecifica)
-        );
-        HBox.setHgrow(metadados, Priority.ALWAYS);
+        HBox.setHgrow(blocoInfos, Priority.ALWAYS);
+        linhaInfos.getChildren().addAll(grandeCapa, blocoInfos);
 
-        linhaInfos.getChildren().addAll(grandeCapa, metadados);
-
-        // Bloco de avaliação (exibe o estado atual)
-        VBox boxReview = new VBox(6);
-        boxReview.setStyle("-fx-border-color: #e2d9a2; -fx-border-width: 1; -fx-padding: 12; "
-                         + "-fx-border-radius: 8; -fx-background-color: #fffaf0; -fx-background-radius: 8;");
-
-        int nota = arquivo.getNota();
-        String notaTexto = (nota == 0) ? "Não avaliado" : nota + " / 5 ⭐";
-        String comentTexto = safe(arquivo.getComentario(), "Nenhum comentário.");
-
-        Label lblNota   = new Label("⭐ Classificação: " + notaTexto);
-        lblNota.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
-
-        Label lblComent = new Label("📝 Crítica: " + comentTexto);
-        lblComent.setWrapText(true);
-        lblComent.setStyle("-fx-font-style: italic; -fx-font-size: 12px; -fx-text-fill: #555;");
-
-        boxReview.getChildren().addAll(lblNota, lblComent);
-
-        // Link de acesso
+        // Link
         Hyperlink link = new Hyperlink("🚀 Abrir / Executar mídia");
-        link.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        link.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: " + COR_ACENTO + ";");
         link.setOnAction(e -> {
             String url = arquivo.getLink();
             if (url == null || url.trim().isEmpty()) {
@@ -397,31 +385,152 @@ public class TelaPrincipal extends Application {
             }
         });
 
-        // Botão Avaliar / Revisar — texto muda conforme o estado real
-        boolean jaAvaliado = (nota > 0);
-        Button btnAvaliar = new Button(jaAvaliado ? "🔄 Revisar Avaliação" : "⭐ Avaliar");
-        btnAvaliar.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; "
-                          + "-fx-font-weight: bold; -fx-padding: 8 18 8 18; -fx-cursor: hand;");
+        // Botão único de avaliar / revisar
+        int nota = arquivo.getNota();
+        Button btnAvaliar = estilizarBotao(
+            nota > 0 ? "🔄 Revisar Avaliação" : "⭐ Avaliar",
+            COR_DOURADO, "#1a1a2e");
         btnAvaliar.setOnAction(e -> {
             abrirPopUpAvaliar(arquivo);
-            // Após fechar o popup, recarrega o painel de detalhes para refletir a nova nota
             mostrarPainelDetalhes(arquivo);
         });
 
-        HBox acoes = new HBox(10);
-        acoes.setPadding(new Insets(6, 0, 0, 0));
-        acoes.getChildren().add(btnAvaliar);
-
-        conteudo.getChildren().addAll(lblNome, linhaInfos, boxReview, link, acoes);
+        conteudo.getChildren().addAll(lblNome, linhaInfos, link, btnAvaliar);
 
         ScrollPane scroll = new ScrollPane(conteudo);
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         painelDetalhes.setCenter(scroll);
-
-        // Substitui apenas o centro — barra superior e inferior ficam intactas
         layoutRaiz.setCenter(painelDetalhes);
+    }
+
+    // =====================================================================
+    //  PAINEL DE AVALIADOS — lista cards e ao clicar mostra nota + crítica
+    // =====================================================================
+    private void mostrarPainelAvaliados(List<Arquivo> avaliados) {
+        BorderPane painel = new BorderPane();
+        painel.setPadding(new Insets(20));
+        painel.setStyle("-fx-background-color: " + COR_FUNDO + ";");
+
+        Button btnVoltar = estilizarBotao("⬅ Voltar", COR_CARD, COR_TEXTO);
+        btnVoltar.setOnAction(e -> voltarParaBiblioteca());
+        painel.setTop(btnVoltar);
+        BorderPane.setMargin(btnVoltar, new Insets(0, 0, 14, 0));
+
+        Label titulo = new Label("⭐ Itens Avaliados");
+        titulo.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + COR_DOURADO + ";");
+
+        // Grid de cards avaliados (mesma aparência dos cards da biblioteca)
+        HBox gridCards = new HBox(14);
+        gridCards.setPadding(new Insets(10, 0, 0, 0));
+
+        for (Arquivo a : avaliados) {
+            VBox card = criarCardMiniatura(a);
+            // Sobrescreve o clique: abre a view de avaliação em vez de detalhes
+            card.setOnMouseClicked(ev -> mostrarDetalheAvaliacao(a));
+            card.setOnMouseEntered(ev -> card.setStyle(
+                "-fx-border-color: " + COR_DOURADO + "; -fx-border-radius: 8;"
+                + "-fx-background-color: " + COR_ACENTO2 + "; -fx-background-radius: 8; -fx-cursor: hand;"));
+            card.setOnMouseExited(ev -> card.setStyle(
+                "-fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 8;"
+                + "-fx-background-color: " + COR_CARD + "; -fx-background-radius: 8; -fx-cursor: hand;"));
+            gridCards.getChildren().add(card);
+        }
+
+        ScrollPane scroll = new ScrollPane(gridCards);
+        scroll.setFitToHeight(true);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        VBox centro = new VBox(12, titulo, scroll);
+        painel.setCenter(centro);
+        layoutRaiz.setCenter(painel);
+    }
+
+    // Detalhe de avaliação: título, imagem, nota em destaque, crítica
+    private void mostrarDetalheAvaliacao(Arquivo arquivo) {
+        BorderPane painel = new BorderPane();
+        painel.setPadding(new Insets(24));
+        painel.setStyle("-fx-background-color: " + COR_FUNDO + ";");
+
+        Button btnVoltar = estilizarBotao("⬅ Voltar para Avaliados", COR_CARD, COR_TEXTO);
+        btnVoltar.setOnAction(e -> {
+            List<Arquivo> avaliados = cerebro.getBiblioteca().stream()
+                .filter(a -> a.getNota() > 0).collect(Collectors.toList());
+            mostrarPainelAvaliados(avaliados);
+        });
+        painel.setTop(btnVoltar);
+        BorderPane.setMargin(btnVoltar, new Insets(0, 0, 16, 0));
+
+        // Linha: imagem + lado direito
+        HBox linha = new HBox(24);
+        linha.setAlignment(Pos.TOP_LEFT);
+
+        ImageView capa = new ImageView();
+        capa.setFitWidth(150);
+        capa.setFitHeight(195);
+        capa.setPreserveRatio(false);
+        carregarImagem(capa, arquivo.getImagem(), 150, 195);
+
+        VBox ladoDireito = new VBox(12);
+        ladoDireito.setAlignment(Pos.TOP_LEFT);
+
+        Label lblTitulo = new Label(safe(arquivo.getNome(), "Sem título"));
+        lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
+        lblTitulo.setWrapText(true);
+
+        // Nota em destaque: círculo grande com o número
+        int nota = arquivo.getNota();
+        StackPane circleNota = criarCirculoNota(nota);
+
+        Label lblNotaLabel = new Label("Nota");
+        lblNotaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + COR_TEXTO_SUAVE + ";");
+
+        VBox blocoNota = new VBox(4, circleNota, lblNotaLabel);
+        blocoNota.setAlignment(Pos.CENTER);
+
+        // Crítica / Comentário
+        String comentario = safe(arquivo.getComentario(), "Nenhum comentário registrado.");
+        Label lblCriticaTitulo = new Label("📝 Crítica:");
+        lblCriticaTitulo.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO_SUAVE + ";");
+
+        Label lblCritica = new Label(comentario);
+        lblCritica.setStyle("-fx-font-size: 13px; -fx-font-style: italic; -fx-text-fill: " + COR_TEXTO + ";"
+                          + "-fx-background-color: " + COR_SUPERFICIE + "; -fx-padding: 12;"
+                          + "-fx-background-radius: 8;");
+        lblCritica.setWrapText(true);
+        lblCritica.setMaxWidth(420);
+
+        Button btnRevisar = estilizarBotao("🔄 Revisar Avaliação", COR_DOURADO, "#1a1a2e");
+        btnRevisar.setOnAction(e -> {
+            abrirPopUpAvaliar(arquivo);
+            mostrarDetalheAvaliacao(arquivo);
+        });
+
+        ladoDireito.getChildren().addAll(lblTitulo, blocoNota, lblCriticaTitulo, lblCritica, btnRevisar);
+        linha.getChildren().addAll(capa, ladoDireito);
+
+        ScrollPane scroll = new ScrollPane(linha);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        painel.setCenter(scroll);
+        layoutRaiz.setCenter(painel);
+    }
+
+    // Círculo com número da nota em destaque
+    private StackPane criarCirculoNota(int nota) {
+        Circle circulo = new Circle(36);
+        circulo.setFill(Color.web(COR_DOURADO));
+
+        Text txtNota = new Text(String.valueOf(nota));
+        txtNota.setFont(Font.font("System", FontWeight.BOLD, 28));
+        txtNota.setFill(Color.web("#1a1a2e"));
+
+        StackPane sp = new StackPane(circulo, txtNota);
+        sp.setPrefSize(72, 72);
+        return sp;
     }
 
     // =====================================================================
@@ -434,19 +543,20 @@ public class TelaPrincipal extends Application {
 
         VBox raiz = new VBox(10);
         raiz.setPadding(new Insets(18));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
 
         Label instrucao = new Label("Digite parte do título para buscar:");
-        instrucao.setStyle("-fx-font-weight: bold;");
+        instrucao.setStyle("-fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
 
         TextField campoTitulo = new TextField();
         campoTitulo.setPromptText("Ex: Inception, The Beatles...");
+        estilizarCampo(campoTitulo);
 
-        Button btnBuscar = new Button("🔍 Buscar");
-        btnBuscar.setStyle("-fx-background-color: #3182ce; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnBuscar = estilizarBotao("🔍 Buscar", COR_ACENTO2, COR_TEXTO);
 
         VBox listaResultados = new VBox(6);
         Label lblStatus = new Label("Aguardando busca...");
-        lblStatus.setStyle("-fx-text-fill: #888;");
+        lblStatus.setStyle("-fx-text-fill: " + COR_TEXTO_SUAVE + ";");
         listaResultados.getChildren().add(lblStatus);
 
         btnBuscar.setOnAction(e -> {
@@ -455,17 +565,17 @@ public class TelaPrincipal extends Application {
                 new Alert(Alert.AlertType.WARNING, "Digite um título para buscar.").showAndWait();
                 return;
             }
-            // ArquivoNaoEncontradoException propagada do controller e tratada aqui na view
             try {
                 List<Arquivo> encontrados = cerebro.buscar_palavra_chave(termo);
                 listaResultados.getChildren().clear();
-                listaResultados.getChildren().add(new Label("Clique no item que deseja remover:"));
+                listaResultados.getChildren().add(labelPopup("Clique no item que deseja remover:"));
                 for (Arquivo a : encontrados) {
                     String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
                     Button btnItem = new Button(icone + "  " + a.getNome());
                     btnItem.setMaxWidth(Double.MAX_VALUE);
-                    btnItem.setStyle("-fx-background-color: #f7f7f7; -fx-border-color: #ddd; "
-                                   + "-fx-cursor: hand; -fx-padding: 8; -fx-alignment: CENTER_LEFT;");
+                    btnItem.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
+                                   + "; -fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 6;"
+                                   + "-fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 8;");
                     btnItem.setOnAction(ev -> {
                         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
                         confirm.setTitle("Confirmar Remoção");
@@ -489,7 +599,7 @@ public class TelaPrincipal extends Application {
                 }
             } catch (ArquivoNaoEncontradoException exNF) {
                 listaResultados.getChildren().clear();
-                listaResultados.getChildren().add(new Label("❌ " + exNF.getMessage()));
+                listaResultados.getChildren().add(labelPopup("❌ " + exNF.getMessage()));
             }
         });
 
@@ -498,9 +608,10 @@ public class TelaPrincipal extends Application {
         ScrollPane scrollLista = new ScrollPane(listaResultados);
         scrollLista.setFitToWidth(true);
         scrollLista.setPrefHeight(200);
+        scrollLista.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         raiz.getChildren().addAll(instrucao, campoTitulo, btnBuscar, new Separator(), scrollLista);
-        popup.setScene(new Scene(raiz, 380, 360));
+        popup.setScene(new Scene(raiz, 400, 380));
         popup.showAndWait();
     }
 
@@ -514,18 +625,19 @@ public class TelaPrincipal extends Application {
 
         VBox raiz = new VBox(10);
         raiz.setPadding(new Insets(18));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
 
         Label instrucao = new Label("Digite parte do título para buscar:");
-        instrucao.setStyle("-fx-font-weight: bold;");
+        instrucao.setStyle("-fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
 
         TextField campoTitulo = new TextField();
         campoTitulo.setPromptText("Ex: Inception, The Beatles...");
+        estilizarCampo(campoTitulo);
 
-        Button btnBuscar = new Button("🔍 Buscar");
-        btnBuscar.setStyle("-fx-background-color: #3182ce; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnBuscar = estilizarBotao("🔍 Buscar", COR_ACENTO2, COR_TEXTO);
 
         VBox listaResultados = new VBox(6);
-        listaResultados.getChildren().add(new Label("Aguardando busca..."));
+        listaResultados.getChildren().add(labelPopup("Aguardando busca..."));
 
         btnBuscar.setOnAction(e -> {
             String termo = campoTitulo.getText().trim();
@@ -533,17 +645,17 @@ public class TelaPrincipal extends Application {
                 new Alert(Alert.AlertType.WARNING, "Digite um título para buscar.").showAndWait();
                 return;
             }
-            // ArquivoNaoEncontradoException propagada do controller e tratada aqui na view
             try {
                 List<Arquivo> encontrados = cerebro.buscar_palavra_chave(termo);
                 listaResultados.getChildren().clear();
-                listaResultados.getChildren().add(new Label("Clique no item que deseja editar:"));
+                listaResultados.getChildren().add(labelPopup("Clique no item que deseja editar:"));
                 for (Arquivo a : encontrados) {
                     String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
                     Button btnItem = new Button(icone + "  " + a.getNome());
                     btnItem.setMaxWidth(Double.MAX_VALUE);
-                    btnItem.setStyle("-fx-background-color: #f7f7f7; -fx-border-color: #ddd; "
-                                   + "-fx-cursor: hand; -fx-padding: 8; -fx-alignment: CENTER_LEFT;");
+                    btnItem.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
+                                   + "; -fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 6;"
+                                   + "-fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 8;");
                     btnItem.setOnAction(ev -> {
                         popup.close();
                         abrirFormularioEdicao(a);
@@ -552,7 +664,7 @@ public class TelaPrincipal extends Application {
                 }
             } catch (ArquivoNaoEncontradoException exNF) {
                 listaResultados.getChildren().clear();
-                listaResultados.getChildren().add(new Label("❌ " + exNF.getMessage()));
+                listaResultados.getChildren().add(labelPopup("❌ " + exNF.getMessage()));
             }
         });
 
@@ -561,25 +673,25 @@ public class TelaPrincipal extends Application {
         ScrollPane scrollLista = new ScrollPane(listaResultados);
         scrollLista.setFitToWidth(true);
         scrollLista.setPrefHeight(200);
+        scrollLista.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         raiz.getChildren().addAll(instrucao, campoTitulo, btnBuscar, new Separator(), scrollLista);
-        popup.setScene(new Scene(raiz, 380, 360));
+        popup.setScene(new Scene(raiz, 400, 380));
         popup.showAndWait();
     }
 
-    // Formulário de edição com campos pré-preenchidos e editáveis
+    // =====================================================================
+    //  FORMULÁRIO DE EDIÇÃO
+    // =====================================================================
     private void abrirFormularioEdicao(Arquivo arquivo) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.setTitle("Editando: " + arquivo.getNome());
 
-        // Usa VBox simples — mais confiável que GridPane para exibir campos preenchidos
         VBox form = new VBox(6);
         form.setPadding(new Insets(18));
-        form.setStyle("-fx-background-color: #fff;");
+        form.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
 
-        // Helper: cria um bloco label + campo
-        // Os campos são criados com texto já preenchido
         TextField txtTitulo = new TextField(safe(arquivo.getNome(), ""));
         TextField txtAno    = new TextField(arquivo.getAnoLancamento() == 0 ? "" : String.valueOf(arquivo.getAnoLancamento()));
         TextField txtGenero = new TextField(safe(arquivo.getGenero(), ""));
@@ -599,27 +711,24 @@ public class TelaPrincipal extends Application {
             txtExtra.setText(safe(((Livro) arquivo).getAutor(), ""));
         }
 
-        // Tamanho explícito para garantir que os campos apareçam
-        double larguraCampo = 340;
+        double larg = 340;
         for (TextField tf : new TextField[]{txtTitulo, txtAno, txtGenero, txtImagem, txtLink, txtExtra}) {
-            tf.setPrefWidth(larguraCampo);
-            tf.setMinWidth(larguraCampo);
+            tf.setPrefWidth(larg);
+            tf.setMinWidth(larg);
+            estilizarCampo(tf);
         }
 
-        // Monta o formulário: Label em cima, campo embaixo (layout mais simples e confiável)
         form.getChildren().addAll(
-            new Label("Título *:"),   txtTitulo,
-            new Label("Ano:"),        txtAno,
-            new Label("Gênero:"),     txtGenero,
-            new Label("URL Capa:"),   txtImagem,
-            new Label("URL Mídia:"),  txtLink,
-            new Label(labelExtra),    txtExtra
+            labelPopup("Título *:"),  txtTitulo,
+            labelPopup("Ano:"),       txtAno,
+            labelPopup("Gênero:"),    txtGenero,
+            labelPopup("URL Capa:"),  txtImagem,
+            labelPopup("URL Mídia:"), txtLink,
+            labelPopup(labelExtra),   txtExtra
         );
 
-        Button btnSalvar = new Button("💾 Salvar Alterações");
-        btnSalvar.setPrefWidth(larguraCampo);
-        btnSalvar.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; "
-                         + "-fx-font-weight: bold; -fx-padding: 10 0 10 0;");
+        Button btnSalvar = estilizarBotao("💾 Salvar Alterações", "#27ae60", COR_TEXTO);
+        btnSalvar.setPrefWidth(larg);
         btnSalvar.setDefaultButton(true);
 
         btnSalvar.setOnAction(e -> {
@@ -638,9 +747,9 @@ public class TelaPrincipal extends Application {
                 String anoStr = txtAno.getText().trim();
                 arquivo.setAnoLancamento(anoStr.isEmpty() ? 0 : Integer.parseInt(anoStr));
 
-                if (arquivo instanceof Album)       ((Album) arquivo).setBanda(txtExtra.getText().trim());
-                else if (arquivo instanceof Filme)  ((Filme) arquivo).setDiretor(txtExtra.getText().trim());
-                else if (arquivo instanceof Livro)  ((Livro) arquivo).setAutor(txtExtra.getText().trim());
+                if (arquivo instanceof Album)      ((Album) arquivo).setBanda(txtExtra.getText().trim());
+                else if (arquivo instanceof Filme) ((Filme) arquivo).setDiretor(txtExtra.getText().trim());
+                else if (arquivo instanceof Livro) ((Livro) arquivo).setAutor(txtExtra.getText().trim());
 
                 cerebro.editar_busca(nomeOriginal, arquivo);
                 voltarParaBiblioteca();
@@ -657,10 +766,10 @@ public class TelaPrincipal extends Application {
 
         ScrollPane scroll = new ScrollPane(form);
         scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color: #fff; -fx-background: #fff;");
+        scroll.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-background: " + COR_SUPERFICIE + ";");
 
-        popup.setScene(new Scene(scroll, 420, 430));
-        popup.show(); // show() em vez de showAndWait() — garante que o layout renderiza antes de travar
+        popup.setScene(new Scene(scroll, 420, 440));
+        popup.show();
     }
 
     // =====================================================================
@@ -673,23 +782,26 @@ public class TelaPrincipal extends Application {
 
         VBox box = new VBox(10);
         box.setPadding(new Insets(18));
+        box.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
 
         boolean jaAvaliado = (arquivo.getNota() > 0);
         Label info = new Label((jaAvaliado ? "Revisar avaliação: " : "Avaliar: ") + arquivo.getNome());
-        info.setStyle("-fx-font-weight: bold;");
+        info.setStyle("-fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
 
         ComboBox<Integer> cbNota = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5));
         cbNota.setValue(jaAvaliado ? arquivo.getNota() : 5);
+        cbNota.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO + ";");
 
         TextArea txtComent = new TextArea();
         txtComent.setPromptText("Escreva sua crítica/comentário...");
         txtComent.setPrefRowCount(4);
+        txtComent.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
+                         + "; -fx-control-inner-background: " + COR_CARD + ";");
         if (jaAvaliado && arquivo.getComentario() != null) {
             txtComent.setText(arquivo.getComentario());
         }
 
-        Button btnSalvar = new Button("💾 Salvar Avaliação");
-        btnSalvar.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnSalvar = estilizarBotao("💾 Salvar Avaliação", COR_DOURADO, "#1a1a2e");
         btnSalvar.setDefaultButton(true);
         btnSalvar.setOnAction(e -> {
             try {
@@ -703,14 +815,13 @@ public class TelaPrincipal extends Application {
 
         box.getChildren().addAll(
             info,
-            new Label("Nota (1 a 5):"), cbNota,
-            new Label("Comentário (opcional):"), txtComent,
+            labelPopup("Nota (1 a 5):"), cbNota,
+            labelPopup("Comentário (opcional):"), txtComent,
             btnSalvar
         );
 
-        popup.setScene(new Scene(box, 340, 320));
+        popup.setScene(new Scene(box, 360, 340));
         popup.showAndWait();
-        // NÃO chamamos mostrarPainelDetalhes aqui — quem chamou esse método já faz isso depois
     }
 
     // =====================================================================
@@ -721,40 +832,39 @@ public class TelaPrincipal extends Application {
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.setTitle("Adicionar Nova Mídia");
 
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(18));
-        grid.setHgap(12);
-        grid.setVgap(10);
-
-        ColumnConstraints col0 = new ColumnConstraints(110);
-        ColumnConstraints col1 = new ColumnConstraints();
-        col1.setHgrow(Priority.ALWAYS);
-        grid.getColumnConstraints().addAll(col0, col1);
+        VBox form = new VBox(6);
+        form.setPadding(new Insets(18));
+        form.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
 
         ComboBox<String> cbTipo = new ComboBox<>(FXCollections.observableArrayList("Álbum", "Filme", "Livro"));
         cbTipo.setValue("Álbum");
+        cbTipo.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO + ";");
 
-        TextField txtT = new TextField();
-        TextField txtA = new TextField();
-        TextField txtG = new TextField();
+        TextField txtT = new TextField(); txtT.setPromptText("Obrigatório");
+        TextField txtA = new TextField(); txtA.setPromptText("Opcional");
+        TextField txtG = new TextField(); txtG.setPromptText("Opcional");
         TextField txtI = new TextField(); txtI.setPromptText("Opcional (sorteio automático)");
         TextField txtL = new TextField(); txtL.setPromptText("Opcional (sorteio automático)");
-        TextField txtE = new TextField();
+        TextField txtE = new TextField(); txtE.setPromptText("Opcional");
 
-        for (TextField tf : new TextField[]{txtT, txtA, txtG, txtI, txtL, txtE})
-            tf.setMaxWidth(Double.MAX_VALUE);
+        double larg = 340;
+        for (TextField tf : new TextField[]{txtT, txtA, txtG, txtI, txtL, txtE}) {
+            tf.setPrefWidth(larg); tf.setMinWidth(larg);
+            estilizarCampo(tf);
+        }
 
-        int row = 0;
-        grid.add(new Label("Categoria:"),  0, row); grid.add(cbTipo, 1, row++);
-        grid.add(new Label("Título *:"),   0, row); grid.add(txtT,   1, row++);
-        grid.add(new Label("Ano:"),        0, row); grid.add(txtA,   1, row++);
-        grid.add(new Label("Gênero:"),     0, row); grid.add(txtG,   1, row++);
-        grid.add(new Label("Link Capa:"),  0, row); grid.add(txtI,   1, row++);
-        grid.add(new Label("Link Mídia:"), 0, row); grid.add(txtL,   1, row++);
-        grid.add(new Label("Info Extra:"), 0, row); grid.add(txtE,   1, row++);
+        form.getChildren().addAll(
+            labelPopup("Categoria:"), cbTipo,
+            labelPopup("Título *:"),   txtT,
+            labelPopup("Ano:"),        txtA,
+            labelPopup("Gênero:"),     txtG,
+            labelPopup("Link Capa:"),  txtI,
+            labelPopup("Link Mídia:"), txtL,
+            labelPopup("Info Extra:"), txtE
+        );
 
-        Button btnSalvar = new Button("💾 Salvar");
-        btnSalvar.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18 8 18;");
+        Button btnSalvar = estilizarBotao("💾 Salvar", "#27ae60", COR_TEXTO);
+        btnSalvar.setPrefWidth(larg);
         btnSalvar.setDefaultButton(true);
         btnSalvar.setOnAction(e -> {
             try {
@@ -781,22 +891,16 @@ public class TelaPrincipal extends Application {
                     novo.setGenero(txtG.getText().trim());
 
                 String img = txtI.getText().trim();
-                if (!img.isEmpty()) {
-                    novo.setImagem(img);
-                } else {
-                    if ("Álbum".equals(tipo)) novo.setImagem(imgsAlbuns[random.nextInt(imgsAlbuns.length)]);
-                    else if ("Filme".equals(tipo)) novo.setImagem(imgsFilmes[random.nextInt(imgsFilmes.length)]);
-                    else novo.setImagem(imgsLivros[random.nextInt(imgsLivros.length)]);
-                }
+                if (!img.isEmpty()) novo.setImagem(img);
+                else if ("Álbum".equals(tipo)) novo.setImagem(imgsAlbuns[random.nextInt(imgsAlbuns.length)]);
+                else if ("Filme".equals(tipo)) novo.setImagem(imgsFilmes[random.nextInt(imgsFilmes.length)]);
+                else novo.setImagem(imgsLivros[random.nextInt(imgsLivros.length)]);
 
                 String lnk = txtL.getText().trim();
-                if (!lnk.isEmpty()) {
-                    novo.setLink(lnk);
-                } else {
-                    if ("Álbum".equals(tipo)) novo.setLink(vidsAlbuns[random.nextInt(vidsAlbuns.length)]);
-                    else if ("Filme".equals(tipo)) novo.setLink(vidsFilmes[random.nextInt(vidsFilmes.length)]);
-                    else novo.setLink(docsLivros[random.nextInt(docsLivros.length)]);
-                }
+                if (!lnk.isEmpty()) novo.setLink(lnk);
+                else if ("Álbum".equals(tipo)) novo.setLink(vidsAlbuns[random.nextInt(vidsAlbuns.length)]);
+                else if ("Filme".equals(tipo)) novo.setLink(vidsFilmes[random.nextInt(vidsFilmes.length)]);
+                else novo.setLink(docsLivros[random.nextInt(docsLivros.length)]);
 
                 cerebro.adicionarArquivo(novo);
                 voltarParaBiblioteca();
@@ -811,9 +915,12 @@ public class TelaPrincipal extends Application {
             }
         });
 
-        VBox raiz = new VBox(14, grid, btnSalvar);
-        raiz.setPadding(new Insets(15));
-        popup.setScene(new Scene(raiz, 420, 400));
+        form.getChildren().add(btnSalvar);
+
+        ScrollPane scroll = new ScrollPane(form);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-background: " + COR_SUPERFICIE + ";");
+        popup.setScene(new Scene(scroll, 420, 480));
         popup.showAndWait();
     }
 
@@ -826,45 +933,57 @@ public class TelaPrincipal extends Application {
             voltarParaBiblioteca();
             return;
         }
-        // Garante que o containerCentral é o que está visível
         voltarParaBiblioteca();
-        // ArquivoNaoEncontradoException propagada do controller e tratada aqui na view
         try {
             renderizarTodasAsSecoes(cerebro.buscar_palavra_chave(termo));
         } catch (ArquivoNaoEncontradoException ex) {
             containerCentral.getChildren().clear();
             Label msg = new Label("❌ " + ex.getMessage());
-            msg.setStyle("-fx-font-size: 13px; -fx-text-fill: #c0392b; -fx-padding: 20;");
+            msg.setStyle("-fx-font-size: 13px; -fx-text-fill: " + COR_ACENTO + "; -fx-padding: 20;");
             containerCentral.getChildren().add(msg);
         }
     }
 
     // =====================================================================
-    //  UTILITÁRIOS
+    //  UTILITÁRIOS DE UI
     // =====================================================================
     private String safe(String valor, String fallback) {
         return (valor == null || valor.trim().isEmpty()) ? fallback : valor.trim();
     }
 
-    private Label labelInfo(String chave, String valor) {
-        Label l = new Label(chave + valor);
-        l.setStyle("-fx-font-size: 13px; -fx-text-fill: #4a5568;");
-        l.setWrapText(true);
+    /** Botão com cor de fundo e texto configuráveis */
+    private Button estilizarBotao(String texto, String corFundo, String corTexto) {
+        Button b = new Button(texto);
+        b.setStyle("-fx-background-color: " + corFundo + "; -fx-text-fill: " + corTexto
+                 + "; -fx-font-weight: bold; -fx-padding: 7 14 7 14;"
+                 + "-fx-background-radius: 6; -fx-cursor: hand;");
+        return b;
+    }
+
+    /** Label padrão para uso em popups escuros */
+    private Label labelPopup(String texto) {
+        Label l = new Label(texto);
+        l.setStyle("-fx-font-size: 12px; -fx-text-fill: " + COR_TEXTO_SUAVE + ";");
         return l;
+    }
+
+    /** Estiliza TextField para o tema escuro */
+    private void estilizarCampo(TextField tf) {
+        tf.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
+                  + "; -fx-prompt-text-fill: " + COR_TEXTO_SUAVE
+                  + "; -fx-border-color: " + COR_ACENTO2
+                  + "; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 5 8 5 8;");
     }
 
     private void carregarImagem(ImageView iv, String url, double w, double h) {
         iv.setFitWidth(w);
         iv.setFitHeight(h);
-        iv.setPreserveRatio(true);
-        if (url != null && !url.trim().isEmpty()) {
-            try {
-                iv.setImage(new Image(url.trim(), w, h, true, true, true));
-            } catch (Exception ex) {
-                iv.setImage(new Image(IMG_PLACEHOLDER, w, h, true, true, true));
-            }
-        } else {
-            iv.setImage(new Image(IMG_PLACEHOLDER, w, h, true, true, true));
+        iv.setPreserveRatio(false);
+        try {
+            String src = (url != null && !url.trim().isEmpty()) ? url.trim() : IMG_PLACEHOLDER;
+            iv.setImage(new Image(src, w, h, false, true, true));
+        } catch (Exception ex) {
+            iv.setImage(new Image(IMG_PLACEHOLDER, w, h, false, true, true));
         }
     }
 }
