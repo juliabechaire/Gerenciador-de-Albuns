@@ -128,14 +128,14 @@ public class TelaPrincipal extends Application {
             case "Filmes":
                 renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Filme).collect(Collectors.toList()));
                 break;
-            case "Álbuns":
-                renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Album).collect(Collectors.toList()));
-                break;
             case "Livros":
                 renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Livro).collect(Collectors.toList()));
                 break;
             default:
-                renderizarTodasAsSecoes(lista);
+                // Filtra álbuns — eles ficam no Módulo Musical
+                renderizarTodasAsSecoes(lista.stream()
+                    .filter(a -> !(a instanceof Album))
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -173,15 +173,14 @@ public class TelaPrincipal extends Application {
 
         MenuItem miTodos  = new MenuItem("🌐 Todos");
         MenuItem miFilmes = new MenuItem("🎬 Filmes");
-        MenuItem miAlbuns = new MenuItem("🎵 Álbuns");
         MenuItem miLivros = new MenuItem("📚 Livros");
 
         miTodos.setOnAction(e  -> { filtroAtual = "Todos";  menuFiltro.setText("🌐 Todos ▾");  txtBusca.clear(); voltarParaBiblioteca(); });
         miFilmes.setOnAction(e -> { filtroAtual = "Filmes"; menuFiltro.setText("🎬 Filmes ▾"); voltarParaBiblioteca(); });
-        miAlbuns.setOnAction(e -> { filtroAtual = "Álbuns"; menuFiltro.setText("🎵 Álbuns ▾"); voltarParaBiblioteca(); });
         miLivros.setOnAction(e -> { filtroAtual = "Livros"; menuFiltro.setText("📚 Livros ▾"); voltarParaBiblioteca(); });
 
-        menuFiltro.getItems().addAll(miTodos, miFilmes, miAlbuns, miLivros);
+        // Álbuns removidos daqui — gerenciados no Módulo Musical
+        menuFiltro.getItems().addAll(miTodos, miFilmes, miLivros);
 
         // Botões de ação
         Button btnAvaliados = estilizarBotao("⭐ Avaliados", COR_DOURADO, "#1a1a2e");
@@ -248,7 +247,7 @@ public class TelaPrincipal extends Application {
         List<Arquivo> filmes = lista.stream().filter(a -> a instanceof Filme).collect(Collectors.toList());
         List<Arquivo> livros = lista.stream().filter(a -> a instanceof Livro).collect(Collectors.toList());
 
-        if (!albuns.isEmpty()) containerCentral.getChildren().add(criarSecaoHorizontal("🎵 Álbuns", albuns));
+        // Álbuns removidos do Cofre — gerenciados no Módulo Musical
         if (!filmes.isEmpty()) containerCentral.getChildren().add(criarSecaoHorizontal("🎬 Filmes", filmes));
         if (!livros.isEmpty()) containerCentral.getChildren().add(criarSecaoHorizontal("📚 Livros", livros));
     }

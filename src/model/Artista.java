@@ -1,0 +1,42 @@
+package model;
+
+import java.io.Serializable;
+
+/**
+ * Representa um artista/banda favorito do usuário.
+ * O usuário adiciona manualmente nome, descrição e foto.
+ * A foto pode ser buscada via Last.fm ou inserida manualmente.
+ */
+public class Artista implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private String nome;
+    private String urlFoto;
+    private String genero;
+    private String descricao;   // texto livre escrito pelo usuário
+    private String pais;
+
+    public Artista(String nome) {
+        this.nome = nome;
+    }
+
+    // Getters e Setters
+    public String getNome()              { return nome; }
+    public void   setNome(String v)      { this.nome = v; }
+
+    public String getUrlFoto()           { return urlFoto; }
+    public void   setUrlFoto(String v)   { this.urlFoto = v; }
+
+    public String getGenero()            { return genero; }
+    public void   setGenero(String v)    { this.genero = v; }
+
+    public String getDescricao()         { return descricao; }
+    public void   setDescricao(String v) { this.descricao = v; }
+
+    public String getPais()              { return pais; }
+    public void   setPais(String v)      { this.pais = v; }
+
+    @Override
+    public String toString() { return nome; }
+}
