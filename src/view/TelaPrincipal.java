@@ -4,6 +4,7 @@ import controller.ArquivoController;
 import model.*;
 import exception.DadosInvalidosException;
 import exception.ArquivoNaoEncontradoException;
+import view.TelaMusica;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -204,7 +205,14 @@ public class TelaPrincipal extends Application {
         btnEditar.setOnAction(e  -> abrirFluxoEditarPorBusca());
         btnRemover.setOnAction(e -> abrirFluxoRemoverPorBusca());
 
-        linhaBusca.getChildren().addAll(menuFiltro, txtBusca, btnBuscar, btnAvaliados, btnEditar, btnRemover);
+        // Botão que abre o Módulo Musical (TelaMusica) passando a cena atual para poder voltar
+        Button btnMusica = estilizarBotao("🎵 Módulo Musical", "#7c3aed", COR_TEXTO);
+        btnMusica.setOnAction(e -> {
+            Scene cenaAtual = palco.getScene();
+            new TelaMusica(palco, cenaAtual).mostrar();
+        });
+
+        linhaBusca.getChildren().addAll(menuFiltro, txtBusca, btnBuscar, btnAvaliados, btnEditar, btnRemover, btnMusica);
 
         painelTopo.getChildren().addAll(lblApp, linhaBusca);
         return painelTopo;
