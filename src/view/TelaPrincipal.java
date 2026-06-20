@@ -111,7 +111,7 @@ public class TelaPrincipal extends Application {
 
         renderizarBiblioteca();
 
-        Scene cena = new Scene(layoutRaiz, 960, 640);
+        Scene cena = new Scene(layoutRaiz, 1050, 680);
         aplicarCss(cena);
         palcoPrincipal.setScene(cena);
         palcoPrincipal.show();

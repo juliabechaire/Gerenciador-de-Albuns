@@ -947,6 +947,18 @@ public class TelaMusica {
         cbTipo.setValue("Álbum de Estúdio");
         cbTipo.setStyle("-fx-background-color:#1a1a3e; -fx-text-fill:#e8e6f0;");
 
+        Label lblDica = new Label("");
+        lblDica.setStyle("-fx-font-size:11px; -fx-text-fill:#9d9ab5; -fx-font-style:italic;");
+        cbTipo.setOnAction(e -> {
+            if ("Single".equals(cbTipo.getValue())) {
+                lblDica.setText("💡 Busca por faixa individual (não por álbum)");
+                txtNome.setPromptText("Nome da música...");
+            } else {
+                lblDica.setText("💡 Busca por álbum completo");
+                txtNome.setPromptText("Nome do álbum, EP...");
+            }
+        });
+
         Button btnBuscar = new Button("🔍  Buscar no Last.fm");
         estilizarBtn(btnBuscar, ACCENT, TEXT);
 
@@ -960,39 +972,43 @@ public class TelaMusica {
             listaResultados.getChildren().clear();
             listaResultados.getChildren().add(labelPopup("Consultando Last.fm..."));
 
+            boolean ehSingle = "Single".equals(cbTipo.getValue());
+
             new Thread(() -> {
                 try {
-                    List<ResultadoBusca> resultados = lastFm.buscarAlbum(termo);
-                    Platform.runLater(() -> {
-                        listaResultados.getChildren().clear();
-                        listaResultados.getChildren().add(labelPopup("Clique para selecionar:"));
-                        for (ResultadoBusca r : resultados) {
-                            HBox item = new HBox(10);
-                            item.setAlignment(Pos.CENTER_LEFT);
-                            item.setPadding(new Insets(8));
-                            item.setStyle("-fx-background-color:#1a1a3e; -fx-border-color:#2d2b5e;"
-                                       + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;");
-                            ImageView thumb = new ImageView();
-                            thumb.setFitWidth(40); thumb.setFitHeight(40);
-                            carregarImg(thumb, r.urlCapa, 40, 40, PH);
-                            Label lbl = new Label(r.toString());
-                            lbl.setStyle("-fx-text-fill:#e8e6f0; -fx-font-family:'Segoe UI'; -fx-font-size:12px;");
-                            lbl.setWrapText(true);
-                            item.getChildren().addAll(thumb, lbl);
-                            item.setOnMouseClicked(ev -> {
-                                popup.close();
-                                Platform.runLater(() -> confirmarEImportar(r, cbTipo.getValue()));
-                            });
-                            item.setOnMouseEntered(ev -> item.setStyle(
-                                "-fx-background-color:#2d1b69; -fx-border-color:#7c3aed;"
-                                + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;"));
-                            item.setOnMouseExited(ev -> item.setStyle(
-                                "-fx-background-color:#1a1a3e; -fx-border-color:#2d2b5e;"
-                                + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;"));
-                            listaResultados.getChildren().add(item);
-                        }
-                        btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
-                    });
+                    if (ehSingle) {
+                        // Busca por FAIXA individual via track.search
+                        List<controller.LastFmService.ResultadoBuscaFaixa> resultados = lastFm.buscarFaixa(termo);
+                        Platform.runLater(() -> {
+                            listaResultados.getChildren().clear();
+                            listaResultados.getChildren().add(labelPopup("Clique para selecionar:"));
+                            for (controller.LastFmService.ResultadoBuscaFaixa r : resultados) {
+                                HBox item = montarItemResultado(r.toString(), r.urlCapa);
+                                item.setOnMouseClicked(ev -> {
+                                    popup.close();
+                                    Platform.runLater(() -> confirmarEImportarFaixa(r));
+                                });
+                                listaResultados.getChildren().add(item);
+                            }
+                            btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
+                        });
+                    } else {
+                        // Busca por ÁLBUM via album.search
+                        List<ResultadoBusca> resultados = lastFm.buscarAlbum(termo);
+                        Platform.runLater(() -> {
+                            listaResultados.getChildren().clear();
+                            listaResultados.getChildren().add(labelPopup("Clique para selecionar:"));
+                            for (ResultadoBusca r : resultados) {
+                                HBox item = montarItemResultado(r.toString(), r.urlCapa);
+                                item.setOnMouseClicked(ev -> {
+                                    popup.close();
+                                    Platform.runLater(() -> confirmarEImportar(r, cbTipo.getValue()));
+                                });
+                                listaResultados.getChildren().add(item);
+                            }
+                            btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
+                        });
+                    }
                 } catch (Exception ex) {
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
@@ -1010,11 +1026,68 @@ public class TelaMusica {
 
         raiz.getChildren().addAll(lblT,
             labelPopup("Nome:"), txtNome,
-            labelPopup("Tipo:"), cbTipo,
+            labelPopup("Tipo:"), cbTipo, lblDica,
             btnBuscar, new Separator(), sp);
-        popup.setScene(new Scene(raiz, 480, 540));
+        popup.setScene(new Scene(raiz, 480, 560));
         aplicarCssPopup(popup);
         popup.showAndWait();
+    }
+
+    /** Cria o item visual (capa + texto) usado nas listas de resultado de busca */
+    private HBox montarItemResultado(String texto, String urlCapa) {
+        HBox item = new HBox(10);
+        item.setAlignment(Pos.CENTER_LEFT);
+        item.setPadding(new Insets(8));
+        item.setStyle("-fx-background-color:#1a1a3e; -fx-border-color:#2d2b5e;"
+                   + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;");
+        ImageView thumb = new ImageView();
+        thumb.setFitWidth(40); thumb.setFitHeight(40);
+        carregarImg(thumb, urlCapa, 40, 40, PH);
+        Label lbl = new Label(texto);
+        lbl.setStyle("-fx-text-fill:#e8e6f0; -fx-font-family:'Segoe UI'; -fx-font-size:12px;");
+        lbl.setWrapText(true);
+        item.getChildren().addAll(thumb, lbl);
+        item.setOnMouseEntered(ev -> item.setStyle(
+            "-fx-background-color:#2d1b69; -fx-border-color:#7c3aed;"
+            + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;"));
+        item.setOnMouseExited(ev -> item.setStyle(
+            "-fx-background-color:#1a1a3e; -fx-border-color:#2d2b5e;"
+            + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;"));
+        return item;
+    }
+
+    /** Confirma e importa uma faixa individual (Single via track.getInfo) */
+    private void confirmarEImportarFaixa(controller.LastFmService.ResultadoBuscaFaixa resultado) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Importando...");
+        VBox raiz = popupBase();
+        Label info = new Label("Importando: " + resultado.nome + " — " + resultado.artista);
+        info.setStyle("-fx-font-weight:bold; -fx-text-fill:#e8e6f0;"); info.setWrapText(true);
+        Label loading = new Label("⏳  Buscando detalhes da faixa no Last.fm...");
+        loading.setStyle("-fx-text-fill:#9d9ab5;");
+        raiz.getChildren().addAll(info, loading);
+        popup.setScene(new Scene(raiz, 380, 120));
+        aplicarCssPopup(popup);
+        popup.show();
+
+        new Thread(() -> {
+            try {
+                Single single = new Single(resultado.nome, resultado.artista);
+                lastFm.importarFaixaIndividual(single, resultado.nome, resultado.artista);
+                ctrl.adicionar(single);
+                Platform.runLater(() -> {
+                    popup.close(); voltarHome();
+                    new Alert(Alert.AlertType.INFORMATION,
+                        resultado.nome + " adicionado como Single!").showAndWait();
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro: " + ex.getMessage()).showAndWait();
+                });
+            }
+        }).start();
     }
 
     private void confirmarEImportar(ResultadoBusca resultado, String tipo) {
