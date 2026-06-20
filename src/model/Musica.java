@@ -53,6 +53,12 @@ public abstract class Musica implements Serializable, Importavel {
     public LocalDateTime getUltimaEscuta() { return ultimaEscuta; }
     public int getTotalEscutas()           { return totalEscutas; }
 
+    /** Zera a última escuta e o contador de escutas desta obra */
+    public void limparHistoricoEscuta() {
+        this.ultimaEscuta = null;
+        this.totalEscutas = 0;
+    }
+
     public String getUltimaEscutaFormatada() {
         if (ultimaEscuta == null) return "Nunca ouvido";
         return ultimaEscuta.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));

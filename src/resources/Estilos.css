@@ -478,6 +478,46 @@
     -fx-background-color: #a78bfa;
 }
 
+/* ── MENUBUTTON / CONTEXT MENU (dropdown de filtro "Todos ▾") ──────────
+   Sem essas regras, o dropdown que abre usa o skin branco padrão do
+   sistema, mesmo que o MenuButton em si esteja estilizado. */
+.menu-button {
+    -fx-background-color: #1a1a3e;
+    -fx-text-fill: #e8e6f0;
+    -fx-border-color: #2d2b5e;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.menu-button .label {
+    -fx-text-fill: #e8e6f0;
+}
+.menu-button .arrow {
+    -fx-background-color: #a78bfa;
+}
+.context-menu {
+    -fx-background-color: #1a1a3e;
+    -fx-border-color: #7c3aed;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.menu-item {
+    -fx-background-color: #1a1a3e;
+    -fx-padding: 6 14 6 14;
+}
+.menu-item .label {
+    -fx-text-fill: #e8e6f0;
+    -fx-font-size: 13px;
+}
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: #2d1b69;
+}
+.menu-item:hover .label,
+.menu-item:focused .label {
+    -fx-text-fill: #ffffff;
+}
+
 /* ── ALERT / DIALOG ─────────────────────────────────────────────────── */
 .dialog-pane {
     -fx-background-color: #12122a;

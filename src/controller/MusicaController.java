@@ -78,6 +78,14 @@ public class MusicaController {
             .collect(Collectors.toList());
     }
 
+    /** Zera o histórico de escuta (última escuta + contador) de todas as obras */
+    public void limparHistorico() throws IOException {
+        for (Musica m : biblioteca) {
+            m.limparHistoricoEscuta();
+        }
+        salvar();
+    }
+
     // ── Gerador de Playlist por critério ────────────────────────────────
     /**
      * Gera uma playlist filtrada por gênero e/ou duração máxima total.

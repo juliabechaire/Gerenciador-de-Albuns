@@ -83,14 +83,7 @@ public class TelaMusica {
         renderizarHome();
 
         Scene cena = new Scene(layoutRaiz, 1050, 680);
-
-        // Carrega CSS
-        try {
-            String css = getClass().getResource("/resources/estilos.css").toExternalForm();
-            cena.getStylesheets().add(css);
-        } catch (Exception e) {
-            System.out.println("Aviso: estilos.css não encontrado, usando estilos inline.");
-        }
+        aplicarCss(cena);
 
         palco.setTitle("Cofre Cultural 🎵");
         palco.setScene(cena);
@@ -147,6 +140,28 @@ public class TelaMusica {
         btnEditar.setOnAction(e    -> fluxoEditar());
         btnRemover.setOnAction(e   -> fluxoRemover());
 
+        // Seção HISTÓRICO
+        Label lblHist = new Label("HISTÓRICO");
+        lblHist.setStyle("-fx-font-family:'Segoe UI'; -fx-font-size:10px; -fx-text-fill:#6b6890;"
+                        + "-fx-font-weight:bold; -fx-padding:14 0 4 16;");
+
+        Button btnLimparHistorico = sidebarBtn("🧹  Limpar Histórico");
+        btnLimparHistorico.setOnAction(e -> {
+            Alert c = new Alert(Alert.AlertType.CONFIRMATION,
+                "Limpar todo o histórico de \"Ouvidos Recentemente\"?\nIsso zera as contagens de escuta de todas as obras.");
+            c.showAndWait().ifPresent(r -> {
+                if (r == ButtonType.OK) {
+                    try {
+                        ctrl.limparHistorico();
+                        voltarHome();
+                        new Alert(Alert.AlertType.INFORMATION, "Histórico limpo com sucesso!").showAndWait();
+                    } catch (IOException ex) {
+                        new Alert(Alert.AlertType.ERROR, "Erro ao limpar histórico.").showAndWait();
+                    }
+                }
+            });
+        });
+
         // Espaço empurrando para baixo
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
@@ -159,6 +174,7 @@ public class TelaMusica {
             logo, divTop,
             lblBib, btnBiblioteca,
             lblGer, btnAdicionar, btnEditar, btnRemover,
+            lblHist, btnLimparHistorico,
             spacer, lblVersao
         );
         return sb;
@@ -233,7 +249,7 @@ public class TelaMusica {
 
         linhaAcoes.getChildren().addAll(
             actionCard("🎤", "Artistas",  "Favoritos",        false, e -> mostrarArtistas()),
-            actionCard("▶",  "Playlist",  "Gerar por critério",false, e -> popupPlaylist()),
+            actionCard("✨", "Recomendação", "Sugestões por critério", false, e -> popupPlaylist()),
             actionCard("📊", "Dashboard", "Estatísticas",     false, e -> mostrarDashboard()),
             actionCard("⭐", "Avaliados", "Suas avaliações",  true,  e -> mostrarAvaliados())
         );
@@ -460,18 +476,44 @@ public class TelaMusica {
         estilizarBtn(btnAvaliar, GOLD, "#0d0d1a");
         btnAvaliar.setOnAction(e -> { popupAvaliar(m); mostrarDetalhes(m); });
 
-        VBox centro = new VBox(14, voltar, linha, btnAvaliar);
+        // Botão "Ver no Last.fm" — abre a página do álbum no navegador,
+        // mesmo padrão do botão "Executar mídia" da Biblioteca
+        Button btnLastFm = new Button("🌐  Ver no Last.fm");
+        estilizarBtn(btnLastFm, ACCENT, TEXT);
+        btnLastFm.setOnAction(e -> abrirNoLastFm(m));
+
+        HBox acoes = new HBox(10, btnAvaliar, btnLastFm);
+
+        VBox centro = new VBox(14, voltar, linha, acoes);
         trocarCentro(centro);
+    }
+
+    /** Abre a página do álbum/artista no site do Last.fm no navegador padrão */
+    private void abrirNoLastFm(Musica m) {
+        try {
+            String artista = m.getArtista() != null ? m.getArtista().trim() : "";
+            String album   = m.getNome() != null ? m.getNome().trim() : "";
+            if (artista.isEmpty() || album.isEmpty()) {
+                new Alert(Alert.AlertType.WARNING, "Dados insuficientes para abrir no Last.fm.").showAndWait();
+                return;
+            }
+            String artistaCod = java.net.URLEncoder.encode(artista.replace(" ", "+"), "UTF-8");
+            String albumCod   = java.net.URLEncoder.encode(album.replace(" ", "+"), "UTF-8");
+            String url = "https://www.last.fm/music/" + artistaCod + "/" + albumCod;
+            java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+        } catch (Exception ex) {
+            new Alert(Alert.AlertType.ERROR, "Não foi possível abrir o Last.fm.").showAndWait();
+        }
     }
 
     // ── PLAYLIST ─────────────────────────────────────────────────────────
     private void popupPlaylist() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
-        popup.setTitle("Gerar Playlist");
+        popup.setTitle("Recomendação Musical");
         VBox raiz = popupBase();
 
-        Label lblTitulo = new Label("▶  Gerar Playlist");
+        Label lblTitulo = new Label("✨  Gerar Recomendação");
         lblTitulo.setStyle("-fx-font-family:Impact; -fx-font-size:18px; -fx-text-fill:#a78bfa;");
 
         TextField txtGenero  = inputField("Ex: Rock, Pop, Jazz... (vazio = todos os gêneros)");
@@ -525,7 +567,7 @@ public class TelaMusica {
         String durTotal = totalSeg > 0
             ? (totalSeg/3600) + "h " + ((totalSeg%3600)/60) + "m" : "—";
 
-        Label lblT = new Label("▶  Playlist Gerada");
+        Label lblT = new Label("✨  Recomendação Gerada");
         lblT.setStyle("-fx-font-family:Impact; -fx-font-size:22px; -fx-text-fill:#27ae60;");
         Label lblInfo = new Label(criterio + "   •   " + playlist.size() + " obras   •   " + durTotal);
         lblInfo.setStyle("-fx-font-size:12px; -fx-text-fill:" + MUTED + ";");
@@ -937,7 +979,10 @@ public class TelaMusica {
                             lbl.setStyle("-fx-text-fill:#e8e6f0; -fx-font-family:'Segoe UI'; -fx-font-size:12px;");
                             lbl.setWrapText(true);
                             item.getChildren().addAll(thumb, lbl);
-                            item.setOnMouseClicked(ev -> { popup.close(); confirmarEImportar(r, cbTipo.getValue()); });
+                            item.setOnMouseClicked(ev -> {
+                                popup.close();
+                                Platform.runLater(() -> confirmarEImportar(r, cbTipo.getValue()));
+                            });
                             item.setOnMouseEntered(ev -> item.setStyle(
                                 "-fx-background-color:#2d1b69; -fx-border-color:#7c3aed;"
                                 + "-fx-border-radius:8; -fx-background-radius:8; -fx-cursor:hand;"));
@@ -981,7 +1026,9 @@ public class TelaMusica {
         Label loading = new Label("⏳  Buscando faixas no Last.fm...");
         loading.setStyle("-fx-text-fill:#9d9ab5;");
         raiz.getChildren().addAll(info, loading);
-        popup.setScene(new Scene(raiz, 380, 120)); popup.show();
+        popup.setScene(new Scene(raiz, 380, 120));
+        aplicarCssPopup(popup);
+        popup.show();
 
         new Thread(() -> {
             try {
@@ -1080,7 +1127,10 @@ public class TelaMusica {
                     Button bi = new Button("🎵  " + m.getNome() + "  —  " + safe(m.getArtista(),""));
                     bi.setMaxWidth(Double.MAX_VALUE);
                     estilizarBtn(bi, CARD, TEXT);
-                    bi.setOnAction(ev -> { popup.close(); popupEdicao(m); });
+                    bi.setOnAction(ev -> {
+                        popup.close();
+                        Platform.runLater(() -> popupEdicao(m));
+                    });
                     lista.getChildren().add(bi);
                 }
             } catch (ArquivoNaoEncontradoException ex) {
@@ -1353,14 +1403,28 @@ public class TelaMusica {
         catch (Exception ex) { iv.setImage(new Image(ph, w, h, false, true, true)); }
     }
 
-    private void aplicarCssPopup(Stage popup) {
-        try {
-            String css = getClass().getResource("/resources/estilos.css").toExternalForm();
-            popup.getScene().getStylesheets().add(css);
-        } catch (Exception ignored) {}
-    }
-
     private String safe(String v, String fb) {
         return (v==null||v.trim().isEmpty()) ? fb : v.trim();
+    }
+
+    /** Aplica o estilos.css a uma Scene, com diagnóstico no console.
+     *  Procura em /resources/estilos.css na raiz do classpath compilado
+     *  (deve corresponder a src/resources/estilos.css). */
+    private void aplicarCss(Scene cena) {
+        java.net.URL recurso = getClass().getResource("/resources/estilos.css");
+        if (recurso == null) {
+            System.out.println("[CSS] estilos.css NÃO encontrado em /resources/estilos.css — "
+                + "verifique se o arquivo está em src/resources/estilos.css");
+            return;
+        }
+        cena.getStylesheets().add(recurso.toExternalForm());
+        System.out.println("[CSS] estilos.css carregado com sucesso: " + recurso.toExternalForm());
+    }
+
+    /** Aplica o CSS também a popups (Stages secundários) */
+    private void aplicarCssPopup(Stage popup) {
+        if (popup.getScene() != null) {
+            aplicarCss(popup.getScene());
+        }
     }
 }

@@ -1,12 +1,17 @@
 package view;
 
 import controller.ArquivoController;
+import controller.TMDBService;
+import controller.OpenLibraryService;
+import controller.OpenLibraryService.ResultadoBuscaLivro;
+import controller.TMDBService.ResultadoBuscaFilme;
 import model.*;
 import exception.DadosInvalidosException;
 import exception.ArquivoNaoEncontradoException;
 import view.TelaMusica;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -31,6 +36,8 @@ import java.util.stream.Collectors;
 public class TelaPrincipal extends Application {
 
     private ArquivoController cerebro;
+    private TMDBService tmdb;
+    private OpenLibraryService openLib;
     private VBox containerCentral;
     private TextField txtBusca;
     private Stage palco;
@@ -82,6 +89,8 @@ public class TelaPrincipal extends Application {
     public void start(Stage palcoPrincipal) {
         this.palco = palcoPrincipal;
         this.cerebro = new ArquivoController();
+        this.tmdb = new TMDBService();
+        this.openLib = new OpenLibraryService();
         palcoPrincipal.setTitle("Cofre Cultural v1.0");
 
         layoutRaiz = new BorderPane();
@@ -103,6 +112,7 @@ public class TelaPrincipal extends Application {
         renderizarBiblioteca();
 
         Scene cena = new Scene(layoutRaiz, 960, 640);
+        aplicarCss(cena);
         palcoPrincipal.setScene(cena);
         palcoPrincipal.show();
     }
@@ -167,17 +177,23 @@ public class TelaPrincipal extends Application {
 
         // ── MenuButton de filtro por categoria (substituí os 4 botões) ──
         MenuButton menuFiltro = new MenuButton("🌐 Todos ▾");
-        menuFiltro.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
-                          + "; -fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 6;"
-                          + "-fx-background-radius: 6; -fx-font-weight: bold; -fx-padding: 6 12 6 12;");
+        menuFiltro.setStyle("-fx-background-color: " + COR_CARD + ";"
+                          + "-fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 6;"
+                          + "-fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 13px;"
+                          + "-fx-padding: 6 12 6 12;"
+                          + "-fx-mark-color: " + COR_TEXTO + ";");
+        menuFiltro.setMnemonicParsing(false);
+        // Força a cor do texto do botão — o skin padrão do JavaFX
+        // às vezes ignora -fx-text-fill simples em MenuButton
+        menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO));
 
         MenuItem miTodos  = new MenuItem("🌐 Todos");
         MenuItem miFilmes = new MenuItem("🎬 Filmes");
         MenuItem miLivros = new MenuItem("📚 Livros");
 
-        miTodos.setOnAction(e  -> { filtroAtual = "Todos";  menuFiltro.setText("🌐 Todos ▾");  txtBusca.clear(); voltarParaBiblioteca(); });
-        miFilmes.setOnAction(e -> { filtroAtual = "Filmes"; menuFiltro.setText("🎬 Filmes ▾"); voltarParaBiblioteca(); });
-        miLivros.setOnAction(e -> { filtroAtual = "Livros"; menuFiltro.setText("📚 Livros ▾"); voltarParaBiblioteca(); });
+        miTodos.setOnAction(e  -> { filtroAtual = "Todos";  menuFiltro.setText("🌐 Todos ▾");  menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO)); txtBusca.clear(); voltarParaBiblioteca(); });
+        miFilmes.setOnAction(e -> { filtroAtual = "Filmes"; menuFiltro.setText("🎬 Filmes ▾"); menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO)); voltarParaBiblioteca(); });
+        miLivros.setOnAction(e -> { filtroAtual = "Livros"; menuFiltro.setText("📚 Livros ▾"); menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO)); voltarParaBiblioteca(); });
 
         // Álbuns removidos daqui — gerenciados no Módulo Musical
         menuFiltro.getItems().addAll(miTodos, miFilmes, miLivros);
@@ -619,6 +635,7 @@ public class TelaPrincipal extends Application {
 
         raiz.getChildren().addAll(instrucao, campoTitulo, btnBuscar, new Separator(), scrollLista);
         popup.setScene(new Scene(raiz, 400, 380));
+        aplicarCssPopup(popup);
         popup.showAndWait();
     }
 
@@ -684,6 +701,7 @@ public class TelaPrincipal extends Application {
 
         raiz.getChildren().addAll(instrucao, campoTitulo, btnBuscar, new Separator(), scrollLista);
         popup.setScene(new Scene(raiz, 400, 380));
+        aplicarCssPopup(popup);
         popup.showAndWait();
     }
 
@@ -776,6 +794,7 @@ public class TelaPrincipal extends Application {
         scroll.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-background: " + COR_SUPERFICIE + ";");
 
         popup.setScene(new Scene(scroll, 420, 440));
+        aplicarCssPopup(popup);
         popup.show();
     }
 
@@ -828,24 +847,311 @@ public class TelaPrincipal extends Application {
         );
 
         popup.setScene(new Scene(box, 360, 340));
+        aplicarCssPopup(popup);
         popup.showAndWait();
     }
 
     // =====================================================================
-    //  POPUP DE CADASTRO
+    //  POPUP DE CADASTRO — escolha do tipo, depois Manual ou via API
     // =====================================================================
     private void abrirPopUpCadastro() {
+        Stage popupTipo = new Stage();
+        popupTipo.initModality(Modality.APPLICATION_MODAL);
+        popupTipo.setTitle("Adicionar Nova Mídia");
+
+        VBox raiz = new VBox(14);
+        raiz.setPadding(new Insets(20));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
+
+        Label titulo = new Label("O que você quer adicionar?");
+        titulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";"
+                       + "-fx-font-family: 'Segoe UI';");
+
+        Button btnFilme = estilizarBotao("🎬 Filme", "#3498db", COR_TEXTO);
+        Button btnLivro = estilizarBotao("📚 Livro", "#8e44ad", COR_TEXTO);
+        btnFilme.setPrefWidth(300);
+        btnLivro.setPrefWidth(300);
+
+        btnFilme.setOnAction(e -> {
+            popupTipo.close();
+            Platform.runLater(() -> abrirEscolhaMetodo("Filme"));
+        });
+        btnLivro.setOnAction(e -> {
+            popupTipo.close();
+            Platform.runLater(() -> abrirEscolhaMetodo("Livro"));
+        });
+
+        raiz.getChildren().addAll(titulo, btnFilme, btnLivro);
+        popupTipo.setScene(new Scene(raiz, 340, 200));
+        aplicarCssPopup(popupTipo);
+        popupTipo.showAndWait();
+    }
+
+    /** Segunda etapa: escolher entre cadastro manual ou busca via API */
+    private void abrirEscolhaMetodo(String tipo) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
-        popup.setTitle("Adicionar Nova Mídia");
+        popup.setTitle("Adicionar " + tipo);
+
+        VBox raiz = new VBox(14);
+        raiz.setPadding(new Insets(20));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
+
+        Label titulo = new Label("Como deseja cadastrar este " + tipo.toLowerCase() + "?");
+        titulo.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";"
+                       + "-fx-font-family: 'Segoe UI';");
+        titulo.setWrapText(true);
+
+        String apiNome = tipo.equals("Filme") ? "🔍 Buscar no TMDB" : "🔍 Buscar no Open Library";
+        Button btnApi    = estilizarBotao(apiNome, "#27ae60", COR_TEXTO);
+        Button btnManual = estilizarBotao("✍️ Cadastro Manual", COR_CARD, COR_TEXTO);
+        btnApi.setPrefWidth(300);
+        btnManual.setPrefWidth(300);
+
+        btnApi.setOnAction(e -> {
+            popup.close();
+            Platform.runLater(() -> {
+                if (tipo.equals("Filme")) abrirBuscaTMDB();
+                else abrirBuscaOpenLibrary();
+            });
+        });
+        btnManual.setOnAction(e -> {
+            popup.close();
+            Platform.runLater(() -> abrirCadastroManual(tipo));
+        });
+
+        raiz.getChildren().addAll(titulo, btnApi, btnManual);
+        popup.setScene(new Scene(raiz, 360, 220));
+        aplicarCssPopup(popup);
+        popup.showAndWait();
+    }
+
+    // ── CADASTRO VIA TMDB (Filme) ────────────────────────────────────────
+    private void abrirBuscaTMDB() {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Buscar Filme no TMDB");
+
+        VBox raiz = new VBox(10);
+        raiz.setPadding(new Insets(18));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
+
+        TextField txtNome = new TextField();
+        txtNome.setPromptText("Nome do filme...");
+        txtNome.setPrefWidth(380);
+        estilizarCampo(txtNome);
+
+        Button btnBuscar = estilizarBotao("🔍 Buscar", "#27ae60", COR_TEXTO);
+
+        VBox listaResultados = new VBox(6);
+        listaResultados.getChildren().add(labelPopup("Aguardando busca..."));
+
+        btnBuscar.setOnAction(e -> {
+            String termo = txtNome.getText().trim();
+            if (termo.isEmpty()) { new Alert(Alert.AlertType.WARNING, "Digite o nome do filme.").showAndWait(); return; }
+            btnBuscar.setDisable(true); btnBuscar.setText("⏳ Buscando...");
+            listaResultados.getChildren().clear();
+            listaResultados.getChildren().add(labelPopup("Consultando TMDB..."));
+
+            new Thread(() -> {
+                try {
+                    List<ResultadoBuscaFilme> resultados = tmdb.buscarFilme(termo);
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("Clique para selecionar:"));
+                        for (ResultadoBuscaFilme r : resultados) {
+                            HBox item = new HBox(10);
+                            item.setAlignment(Pos.CENTER_LEFT);
+                            item.setPadding(new Insets(6));
+                            item.setStyle("-fx-background-color: " + COR_CARD + "; -fx-border-color: " + COR_ACENTO2
+                                        + "; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;");
+                            ImageView thumb = new ImageView();
+                            carregarImagem(thumb, r.poster, 40, 55);
+                            Label lbl = new Label(r.toString());
+                            lbl.setStyle("-fx-text-fill: " + COR_TEXTO + "; -fx-font-size: 12px;"
+                                       + "-fx-font-family: 'Segoe UI';");
+                            lbl.setWrapText(true);
+                            item.getChildren().addAll(thumb, lbl);
+                            item.setOnMouseClicked(ev -> {
+                                popup.close();
+                                Platform.runLater(() -> confirmarImportFilme(r));
+                            });
+                            listaResultados.getChildren().add(item);
+                        }
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("❌ " + ex.getMessage()));
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
+                    });
+                }
+            }).start();
+        });
+        txtNome.setOnAction(e -> btnBuscar.fire());
+
+        ScrollPane sp = new ScrollPane(listaResultados);
+        sp.setFitToWidth(true); sp.setPrefHeight(280);
+        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        raiz.getChildren().addAll(labelPopup("Nome do filme:"), txtNome, btnBuscar, new Separator(), sp);
+        popup.setScene(new Scene(raiz, 440, 460));
+        aplicarCssPopup(popup);
+        popup.showAndWait();
+    }
+
+    private void confirmarImportFilme(ResultadoBuscaFilme resultado) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        VBox raiz = new VBox(8);
+        raiz.setPadding(new Insets(18));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
+        Label info = new Label("Importando: " + resultado.titulo);
+        info.setStyle("-fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
+        Label loading = new Label("⏳ Buscando detalhes no TMDB...");
+        loading.setStyle("-fx-text-fill: " + COR_TEXTO_SUAVE + ";");
+        raiz.getChildren().addAll(info, loading);
+        popup.setScene(new Scene(raiz, 360, 120));
+        aplicarCssPopup(popup);
+        popup.show();
+
+        new Thread(() -> {
+            try {
+                Filme filme = new Filme(resultado.titulo);
+                tmdb.importarFilmeCompleto(filme, resultado.id);
+                cerebro.adicionarArquivo(filme);
+                Platform.runLater(() -> {
+                    popup.close(); voltarParaBiblioteca();
+                    new Alert(Alert.AlertType.INFORMATION, resultado.titulo + " adicionado com sucesso!").showAndWait();
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro ao importar: " + ex.getMessage()).showAndWait();
+                });
+            }
+        }).start();
+    }
+
+    // ── CADASTRO VIA OPEN LIBRARY (Livro) ────────────────────────────────
+    private void abrirBuscaOpenLibrary() {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Buscar Livro no Open Library");
+
+        VBox raiz = new VBox(10);
+        raiz.setPadding(new Insets(18));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
+
+        TextField txtNome = new TextField();
+        txtNome.setPromptText("Nome do livro...");
+        txtNome.setPrefWidth(380);
+        estilizarCampo(txtNome);
+
+        Button btnBuscar = estilizarBotao("🔍 Buscar", "#27ae60", COR_TEXTO);
+
+        VBox listaResultados = new VBox(6);
+        listaResultados.getChildren().add(labelPopup("Aguardando busca..."));
+
+        btnBuscar.setOnAction(e -> {
+            String termo = txtNome.getText().trim();
+            if (termo.isEmpty()) { new Alert(Alert.AlertType.WARNING, "Digite o nome do livro.").showAndWait(); return; }
+            btnBuscar.setDisable(true); btnBuscar.setText("⏳ Buscando...");
+            listaResultados.getChildren().clear();
+            listaResultados.getChildren().add(labelPopup("Consultando Open Library..."));
+
+            new Thread(() -> {
+                try {
+                    List<ResultadoBuscaLivro> resultados = openLib.buscarLivro(termo);
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("Clique para selecionar:"));
+                        for (ResultadoBuscaLivro r : resultados) {
+                            HBox item = new HBox(10);
+                            item.setAlignment(Pos.CENTER_LEFT);
+                            item.setPadding(new Insets(6));
+                            item.setStyle("-fx-background-color: " + COR_CARD + "; -fx-border-color: " + COR_ACENTO2
+                                        + "; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;");
+                            ImageView thumb = new ImageView();
+                            carregarImagem(thumb, r.capa, 40, 55);
+                            Label lbl = new Label(r.toString());
+                            lbl.setStyle("-fx-text-fill: " + COR_TEXTO + "; -fx-font-size: 12px;"
+                                       + "-fx-font-family: 'Segoe UI';");
+                            lbl.setWrapText(true);
+                            item.getChildren().addAll(thumb, lbl);
+                            item.setOnMouseClicked(ev -> {
+                                popup.close();
+                                Platform.runLater(() -> confirmarImportLivro(r));
+                            });
+                            listaResultados.getChildren().add(item);
+                        }
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("❌ " + ex.getMessage()));
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
+                    });
+                }
+            }).start();
+        });
+        txtNome.setOnAction(e -> btnBuscar.fire());
+
+        ScrollPane sp = new ScrollPane(listaResultados);
+        sp.setFitToWidth(true); sp.setPrefHeight(280);
+        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        raiz.getChildren().addAll(labelPopup("Nome do livro:"), txtNome, btnBuscar, new Separator(), sp);
+        popup.setScene(new Scene(raiz, 440, 460));
+        aplicarCssPopup(popup);
+        popup.showAndWait();
+    }
+
+    private void confirmarImportLivro(ResultadoBuscaLivro resultado) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        VBox raiz = new VBox(8);
+        raiz.setPadding(new Insets(18));
+        raiz.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
+        Label info = new Label("Importando: " + resultado.titulo);
+        info.setStyle("-fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
+        info.setWrapText(true);
+        Label loading = new Label("⏳ Buscando detalhes no Open Library...");
+        loading.setStyle("-fx-text-fill: " + COR_TEXTO_SUAVE + ";");
+        raiz.getChildren().addAll(info, loading);
+        popup.setScene(new Scene(raiz, 360, 120));
+        aplicarCssPopup(popup);
+        popup.show();
+
+        new Thread(() -> {
+            try {
+                Livro livro = new Livro(resultado.titulo);
+                openLib.importarLivroCompleto(livro, resultado);
+                cerebro.adicionarArquivo(livro);
+                Platform.runLater(() -> {
+                    popup.close(); voltarParaBiblioteca();
+                    new Alert(Alert.AlertType.INFORMATION, resultado.titulo + " adicionado com sucesso!").showAndWait();
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro ao importar: " + ex.getMessage()).showAndWait();
+                });
+            }
+        }).start();
+    }
+
+    // ── CADASTRO MANUAL (Filme ou Livro) ─────────────────────────────────
+    private void abrirCadastroManual(String tipo) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Cadastro Manual — " + tipo);
 
         VBox form = new VBox(6);
         form.setPadding(new Insets(18));
         form.setStyle("-fx-background-color: " + COR_SUPERFICIE + ";");
-
-        ComboBox<String> cbTipo = new ComboBox<>(FXCollections.observableArrayList("Álbum", "Filme", "Livro"));
-        cbTipo.setValue("Álbum");
-        cbTipo.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO + ";");
 
         TextField txtT = new TextField(); txtT.setPromptText("Obrigatório");
         TextField txtA = new TextField(); txtA.setPromptText("Opcional");
@@ -860,14 +1166,15 @@ public class TelaPrincipal extends Application {
             estilizarCampo(tf);
         }
 
+        String labelExtra = tipo.equals("Filme") ? "Diretor:" : "Autor:";
+
         form.getChildren().addAll(
-            labelPopup("Categoria:"), cbTipo,
             labelPopup("Título *:"),   txtT,
             labelPopup("Ano:"),        txtA,
             labelPopup("Gênero:"),     txtG,
             labelPopup("Link Capa:"),  txtI,
             labelPopup("Link Mídia:"), txtL,
-            labelPopup("Info Extra:"), txtE
+            labelPopup(labelExtra),    txtE
         );
 
         Button btnSalvar = estilizarBotao("💾 Salvar", "#27ae60", COR_TEXTO);
@@ -878,13 +1185,8 @@ public class TelaPrincipal extends Application {
                 String nome = txtT.getText().trim();
                 if (nome.isEmpty()) throw new DadosInvalidosException("O campo Título é obrigatório!");
 
-                String tipo = cbTipo.getValue();
                 Arquivo novo;
-
-                if ("Álbum".equals(tipo)) {
-                    novo = new Album(nome);
-                    if (!txtE.getText().trim().isEmpty()) ((Album) novo).setBanda(txtE.getText().trim());
-                } else if ("Filme".equals(tipo)) {
+                if (tipo.equals("Filme")) {
                     novo = new Filme(nome);
                     if (!txtE.getText().trim().isEmpty()) ((Filme) novo).setDiretor(txtE.getText().trim());
                 } else {
@@ -899,14 +1201,12 @@ public class TelaPrincipal extends Application {
 
                 String img = txtI.getText().trim();
                 if (!img.isEmpty()) novo.setImagem(img);
-                else if ("Álbum".equals(tipo)) novo.setImagem(imgsAlbuns[random.nextInt(imgsAlbuns.length)]);
-                else if ("Filme".equals(tipo)) novo.setImagem(imgsFilmes[random.nextInt(imgsFilmes.length)]);
+                else if (tipo.equals("Filme")) novo.setImagem(imgsFilmes[random.nextInt(imgsFilmes.length)]);
                 else novo.setImagem(imgsLivros[random.nextInt(imgsLivros.length)]);
 
                 String lnk = txtL.getText().trim();
                 if (!lnk.isEmpty()) novo.setLink(lnk);
-                else if ("Álbum".equals(tipo)) novo.setLink(vidsAlbuns[random.nextInt(vidsAlbuns.length)]);
-                else if ("Filme".equals(tipo)) novo.setLink(vidsFilmes[random.nextInt(vidsFilmes.length)]);
+                else if (tipo.equals("Filme")) novo.setLink(vidsFilmes[random.nextInt(vidsFilmes.length)]);
                 else novo.setLink(docsLivros[random.nextInt(docsLivros.length)]);
 
                 cerebro.adicionarArquivo(novo);
@@ -928,6 +1228,7 @@ public class TelaPrincipal extends Application {
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-background: " + COR_SUPERFICIE + ";");
         popup.setScene(new Scene(scroll, 420, 480));
+        aplicarCssPopup(popup);
         popup.showAndWait();
     }
 
@@ -958,11 +1259,11 @@ public class TelaPrincipal extends Application {
         return (valor == null || valor.trim().isEmpty()) ? fallback : valor.trim();
     }
 
-    /** Botão com cor de fundo e texto configuráveis */
+    /** Botão com cor de fundo e texto configuráveis. */
     private Button estilizarBotao(String texto, String corFundo, String corTexto) {
         Button b = new Button(texto);
         b.setStyle("-fx-background-color: " + corFundo + "; -fx-text-fill: " + corTexto
-                 + "; -fx-font-weight: bold; -fx-padding: 7 14 7 14;"
+                 + "; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 7 14 7 14;"
                  + "-fx-background-radius: 6; -fx-cursor: hand;");
         return b;
     }
@@ -991,6 +1292,27 @@ public class TelaPrincipal extends Application {
             iv.setImage(new Image(src, w, h, false, true, true));
         } catch (Exception ex) {
             iv.setImage(new Image(IMG_PLACEHOLDER, w, h, false, true, true));
+        }
+    }
+
+    /** Aplica o estilos.css a uma Scene, com diagnóstico no console.
+     *  Procura em /resources/estilos.css na raiz do classpath compilado
+     *  (deve corresponder a src/resources/estilos.css). */
+    private void aplicarCss(Scene cena) {
+        java.net.URL recurso = getClass().getResource("/resources/estilos.css");
+        if (recurso == null) {
+            System.out.println("[CSS] estilos.css NÃO encontrado em /resources/estilos.css — "
+                + "verifique se o arquivo está em src/resources/estilos.css");
+            return;
+        }
+        cena.getStylesheets().add(recurso.toExternalForm());
+        System.out.println("[CSS] estilos.css carregado com sucesso: " + recurso.toExternalForm());
+    }
+
+    /** Aplica o CSS também a popups (Stages secundários) */
+    private void aplicarCssPopup(Stage popup) {
+        if (popup.getScene() != null) {
+            aplicarCss(popup.getScene());
         }
     }
 }
