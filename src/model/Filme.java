@@ -22,9 +22,10 @@ public class Filme extends Arquivo implements Status {
     public String getElencoPrincipal() {
         return elencoPrincipal;
     }
+    @Override
     public int getStatus() {
         return status;
-    }       
+    }
     public void setDiretor(String diretor) {
         this.diretor = diretor;
     }   
@@ -34,6 +35,7 @@ public class Filme extends Arquivo implements Status {
     public void setElencoPrincipal(String elencoPrincipal) {
         this.elencoPrincipal = elencoPrincipal;
     }   
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }   
@@ -46,10 +48,11 @@ public class Filme extends Arquivo implements Status {
             "🏷️ Gênero: " + (getGenero() == null || getGenero().isEmpty() ? "Não informado" : getGenero()) + "\n" +
             "⏱️ Duração: " + (getDuracao() == 0 ? "Não informado" : getDuracao() + " minutos") + "\n" +
             "👥 Elenco Principal: " + (getElencoPrincipal() == null || getElencoPrincipal().isEmpty() ? "Não informado" : getElencoPrincipal()) + "\n" +
-            "📊 Status de Reprodução: " + (getStatus() == 0 ? "Não assistido" : getStatus() + "% concluído") + "\n" +
+            "📊 Status de Reprodução: " + mostrarStatus() + "\n" +
             "🔗 Link do Filme: " + (getLink() == null || getLink().isEmpty() ? "Não informado" : getLink());
     }  
 
+    @Override
     public String mostrarStatus() {
         if (getStatus() == 0) {
             return "Não assistido";

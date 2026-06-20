@@ -11,7 +11,7 @@ import java.util.List;
  * Define atributos comuns e obriga subclasses a implementar
  * exibirInformacoes() e getTipo().
  */
-public abstract class Musica implements Serializable, Importavel {
+public abstract class Musica implements Serializable, Importavel, Avaliavel {
 
     private static final long serialVersionUID = 1L;
 
@@ -78,11 +78,18 @@ public abstract class Musica implements Serializable, Importavel {
         return String.format("%dm %02ds", min, seg);
     }
 
-    // ── Avaliação ───────────────────────────────────────────────────────
+    // ── Implementação da interface Avaliavel ─────────────────────────────
+    @Override
     public void avaliar(int nota, String comentario) {
         this.nota       = nota;
         this.comentario = comentario;
     }
+
+    @Override
+    public int getNota()             { return nota; }
+
+    @Override
+    public String getComentario()    { return comentario; }
 
     // ── Importavel ──────────────────────────────────────────────────────
     @Override
@@ -106,9 +113,6 @@ public abstract class Musica implements Serializable, Importavel {
 
     public String getUrlLink()          { return urlLink; }
     public void   setUrlLink(String v)  { this.urlLink = v; }
-
-    public int    getNota()             { return nota; }
-    public String getComentario()       { return comentario; }
 
     public List<Faixa> getFaixas()               { return faixas; }
     public void        addFaixa(Faixa f)         { faixas.add(f); }

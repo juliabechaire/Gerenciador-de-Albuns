@@ -1481,13 +1481,13 @@ public class TelaMusica {
     }
 
     /** Aplica o estilos.css a uma Scene, com diagnóstico no console.
-     *  Procura em /resources/estilos.css na raiz do classpath compilado
-     *  (deve corresponder a src/resources/estilos.css). */
+     *  Procura em /resources/Estilos.css na raiz do classpath compilado
+     *  (deve corresponder a src/resources/Estilos.css). */
     private void aplicarCss(Scene cena) {
-        java.net.URL recurso = getClass().getResource("/resources/estilos.css");
+        java.net.URL recurso = getClass().getResource("/resources/Estilos.css");
         if (recurso == null) {
-            System.out.println("[CSS] estilos.css NÃO encontrado em /resources/estilos.css — "
-                + "verifique se o arquivo está em src/resources/estilos.css");
+            System.out.println("[CSS] estilos.css NÃO encontrado em /resources/Estilos.css — "
+                + "verifique se o arquivo está em src/resources/Estilos.css");
             return;
         }
         cena.getStylesheets().add(recurso.toExternalForm());

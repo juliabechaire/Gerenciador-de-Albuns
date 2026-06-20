@@ -3,32 +3,30 @@ import java.io.Serializable;
 
 public abstract class Arquivo implements Avaliavel, Serializable {
     private String nome;
-    private int AnoLancamento;
-    private String genero; //nao sei e é util mesmo
+    private int anoLancamento;
+    private String genero;
     private String imagem;
     private String link;
-    private String tipo; //talvez de pra remover
-    public Integer nota= null;
-    public String comentario="";  
+    private Integer nota = null;
+    private String comentario = "";
 
     public Arquivo(String nome) {
-        this.nome=nome;
-        this.AnoLancamento=0;
-        this.genero="";
-        this.imagem="";
-        this.link="";
+        this.nome = nome;
+        this.anoLancamento = 0;
+        this.genero = "";
+        this.imagem = "";
+        this.link = "";
     }
 
     public abstract String exibirInformacoes();
 
-
-    ////getter e setters obrigatorios
+    // ── Getters e Setters ────────────────────────────────────────────────
     public String getNome() {
         return nome;
     }
 
     public int getAnoLancamento() {
-        return AnoLancamento;
+        return anoLancamento;
     }
 
     public String getGenero() {
@@ -43,17 +41,13 @@ public abstract class Arquivo implements Avaliavel, Serializable {
         return link;
     }
 
-    public String getTipo() {
-        return tipo;
-    }
-
     public void setNome(String nome) {
         this.nome = nome;
-    } 
+    }
 
     public void setAnoLancamento(int anoLancamento) {
-        this.AnoLancamento = anoLancamento;
-    }  
+        this.anoLancamento = anoLancamento;
+    }
 
     public void setGenero(String genero) {
         this.genero = genero;
@@ -61,30 +55,26 @@ public abstract class Arquivo implements Avaliavel, Serializable {
 
     public void setImagem(String imagem) {
         this.imagem = imagem;
-    }  
+    }
 
     public void setLink(String link) {
         this.link = link;
-    } 
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
     }
 
-    ///parte da interface avaliavel
+    // ── Implementação da interface Avaliavel ─────────────────────────────
+    @Override
     public void avaliar(int nota, String comentario) {
         this.nota = nota;
         this.comentario = comentario;
-    }   
+    }
 
+    @Override
     public int getNota() {
-    return nota == null ? 0 : nota;
-    }  
-    
+        return nota == null ? 0 : nota;
+    }
+
+    @Override
     public String getComentario() {
         return comentario;
     }
-
-
-
 }

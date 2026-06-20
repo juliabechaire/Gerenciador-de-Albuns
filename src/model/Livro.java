@@ -19,6 +19,7 @@ public class Livro extends Arquivo implements Status {
         return numeroPaginas;
     }
 
+    @Override
     public int getStatus() {
         return status;
     }
@@ -31,6 +32,7 @@ public class Livro extends Arquivo implements Status {
         this.numeroPaginas = numeroPaginas;
     }
 
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }
@@ -43,10 +45,11 @@ public class Livro extends Arquivo implements Status {
                 "📅 Ano de Lançamento: " + (getAnoLancamento() == 0 ? "Não informado" : getAnoLancamento()) + "\n" +
                 "🏷️ Gênero: " + (getGenero() == null || getGenero().isEmpty() ? "Não informado" : getGenero()) + "\n" +
                 "📖 Número de Páginas: " + (getNumeroPaginas() == 0 ? "Não informado" : getNumeroPaginas()) + "\n" +
-                "📊 Status de Leitura: " + (getStatus() == 0 ? "Não iniciado" : getStatus() + "% concluído") + "\n" +
+                "📊 Status de Leitura: " + mostrarStatus() + "\n" +
                 "🔗 Link do Livro: " + (getLink() == null || getLink().isEmpty() ? "Não informado" : getLink());
         }
     
+    @Override
     public String mostrarStatus() {
         if (getStatus() == 0) {
             return "Não iniciado";

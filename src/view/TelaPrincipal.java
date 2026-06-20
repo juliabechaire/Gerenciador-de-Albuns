@@ -259,11 +259,9 @@ public class TelaPrincipal extends Application {
             return;
         }
 
-        List<Arquivo> albuns = lista.stream().filter(a -> a instanceof Album).collect(Collectors.toList());
         List<Arquivo> filmes = lista.stream().filter(a -> a instanceof Filme).collect(Collectors.toList());
         List<Arquivo> livros = lista.stream().filter(a -> a instanceof Livro).collect(Collectors.toList());
 
-        // Álbuns removidos do Cofre — gerenciados no Módulo Musical
         if (!filmes.isEmpty()) containerCentral.getChildren().add(criarSecaoHorizontal("🎬 Filmes", filmes));
         if (!livros.isEmpty()) containerCentral.getChildren().add(criarSecaoHorizontal("📚 Livros", livros));
     }
@@ -593,6 +591,7 @@ public class TelaPrincipal extends Application {
                 listaResultados.getChildren().clear();
                 listaResultados.getChildren().add(labelPopup("Clique no item que deseja remover:"));
                 for (Arquivo a : encontrados) {
+                    // Trata Album por segurança: pode existir em .dat salvos de versões anteriores
                     String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
                     Button btnItem = new Button(icone + "  " + a.getNome());
                     btnItem.setMaxWidth(Double.MAX_VALUE);
@@ -674,6 +673,7 @@ public class TelaPrincipal extends Application {
                 listaResultados.getChildren().clear();
                 listaResultados.getChildren().add(labelPopup("Clique no item que deseja editar:"));
                 for (Arquivo a : encontrados) {
+                    // Trata Album por segurança: pode existir em .dat salvos de versões anteriores
                     String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
                     Button btnItem = new Button(icone + "  " + a.getNome());
                     btnItem.setMaxWidth(Double.MAX_VALUE);
@@ -725,6 +725,9 @@ public class TelaPrincipal extends Application {
         TextField txtExtra  = new TextField();
 
         String labelExtra;
+        // Album tratado aqui por segurança: caso exista em dados/biblioteca.dat
+        // de uma versão anterior do app (antes da remoção da exibição de Álbuns
+        // do Cofre), ainda é possível encontrá-lo via busca e editá-lo.
         if (arquivo instanceof Album) {
             labelExtra = "Banda/Artista:";
             txtExtra.setText(safe(((Album) arquivo).getBanda(), ""));
@@ -752,6 +755,31 @@ public class TelaPrincipal extends Application {
             labelPopup(labelExtra),   txtExtra
         );
 
+        // Campo de Status (% assistido/lido) — só para Filme e Livro,
+        // que implementam a interface Status. Album não tem esse conceito.
+        Slider sliderStatus = new Slider(0, 100, 0);
+        Label lblStatusValor = new Label();
+        if (arquivo instanceof Status) {
+            Status statusObj = (Status) arquivo;
+            sliderStatus.setValue(statusObj.getStatus());
+            sliderStatus.setShowTickLabels(true);
+            sliderStatus.setShowTickMarks(true);
+            sliderStatus.setMajorTickUnit(25);
+            sliderStatus.setBlockIncrement(5);
+            sliderStatus.setPrefWidth(larg);
+
+            String labelTipo = (arquivo instanceof Filme) ? "Status de Reprodução:" : "Status de Leitura:";
+            lblStatusValor.setText(statusObj.mostrarStatus());
+            lblStatusValor.setStyle("-fx-text-fill: " + COR_TEXTO + "; -fx-font-size: 12px;");
+
+            sliderStatus.valueProperty().addListener((obs, oldV, newV) -> {
+                statusObj.setStatus(newV.intValue());
+                lblStatusValor.setText(statusObj.mostrarStatus());
+            });
+
+            form.getChildren().addAll(labelPopup(labelTipo), sliderStatus, lblStatusValor);
+        }
+
         Button btnSalvar = estilizarBotao("💾 Salvar Alterações", "#27ae60", COR_TEXTO);
         btnSalvar.setPrefWidth(larg);
         btnSalvar.setDefaultButton(true);
@@ -775,6 +803,12 @@ public class TelaPrincipal extends Application {
                 if (arquivo instanceof Album)      ((Album) arquivo).setBanda(txtExtra.getText().trim());
                 else if (arquivo instanceof Filme) ((Filme) arquivo).setDiretor(txtExtra.getText().trim());
                 else if (arquivo instanceof Livro) ((Livro) arquivo).setAutor(txtExtra.getText().trim());
+
+                // O Status já foi atualizado em tempo real pelo listener do slider,
+                // mas garantimos o valor final aqui também por segurança.
+                if (arquivo instanceof Status) {
+                    ((Status) arquivo).setStatus((int) sliderStatus.getValue());
+                }
 
                 cerebro.editar_busca(nomeOriginal, arquivo);
                 voltarParaBiblioteca();
@@ -1296,13 +1330,13 @@ public class TelaPrincipal extends Application {
     }
 
     /** Aplica o estilos.css a uma Scene, com diagnóstico no console.
-     *  Procura em /resources/estilos.css na raiz do classpath compilado
-     *  (deve corresponder a src/resources/estilos.css). */
+     *  Procura em /resources/Estilos.css na raiz do classpath compilado
+     *  (deve corresponder a src/resources/Estilos.css). */
     private void aplicarCss(Scene cena) {
-        java.net.URL recurso = getClass().getResource("/resources/estilos.css");
+        java.net.URL recurso = getClass().getResource("/resources/Estilos.css");
         if (recurso == null) {
-            System.out.println("[CSS] estilos.css NÃO encontrado em /resources/estilos.css — "
-                + "verifique se o arquivo está em src/resources/estilos.css");
+            System.out.println("[CSS] estilos.css NÃO encontrado em /resources/Estilos.css — "
+                + "verifique se o arquivo está em src/resources/Estilos.css");
             return;
         }
         cena.getStylesheets().add(recurso.toExternalForm());
