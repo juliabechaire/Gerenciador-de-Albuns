@@ -1014,10 +1014,18 @@ public class TelaPrincipal extends Application {
                         }
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
                     });
-                } catch (Exception ex) {
+                } catch (ArquivoNaoEncontradoException ex) {
+                    // Busca válida, mas o TMDB não retornou nenhum resultado
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
                         listaResultados.getChildren().add(labelPopup("❌ " + ex.getMessage()));
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
+                    });
+                } catch (IOException ex) {
+                    // Falha de rede/conexão com a API
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("❌ Erro de conexão com o TMDB. Verifique sua internet."));
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
                     });
                 }
@@ -1059,10 +1067,17 @@ public class TelaPrincipal extends Application {
                     popup.close(); voltarParaBiblioteca();
                     new Alert(Alert.AlertType.INFORMATION, resultado.titulo + " adicionado com sucesso!").showAndWait();
                 });
-            } catch (Exception ex) {
+            } catch (ArquivoNaoEncontradoException ex) {
+                // O filme estava na lista de busca, mas os detalhes não foram encontrados no TMDB
                 Platform.runLater(() -> {
                     popup.close();
-                    new Alert(Alert.AlertType.ERROR, "Erro ao importar: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, "Filme não encontrado: " + ex.getMessage()).showAndWait();
+                });
+            } catch (IOException ex) {
+                // Falha de rede ao buscar detalhes, ou falha ao salvar no arquivo local
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
                 });
             }
         }).start();
@@ -1122,10 +1137,18 @@ public class TelaPrincipal extends Application {
                         }
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
                     });
-                } catch (Exception ex) {
+                } catch (ArquivoNaoEncontradoException ex) {
+                    // Busca válida, mas o Open Library não retornou nenhum resultado
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
                         listaResultados.getChildren().add(labelPopup("❌ " + ex.getMessage()));
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
+                    });
+                } catch (IOException ex) {
+                    // Falha de rede/conexão com a API
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("❌ Erro de conexão com o Open Library. Verifique sua internet."));
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍 Buscar");
                     });
                 }
@@ -1168,10 +1191,17 @@ public class TelaPrincipal extends Application {
                     popup.close(); voltarParaBiblioteca();
                     new Alert(Alert.AlertType.INFORMATION, resultado.titulo + " adicionado com sucesso!").showAndWait();
                 });
-            } catch (Exception ex) {
+            } catch (ArquivoNaoEncontradoException ex) {
+                // O livro estava na lista de busca, mas os detalhes não foram encontrados no Open Library
                 Platform.runLater(() -> {
                     popup.close();
-                    new Alert(Alert.AlertType.ERROR, "Erro ao importar: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, "Livro não encontrado: " + ex.getMessage()).showAndWait();
+                });
+            } catch (IOException ex) {
+                // Falha de rede ao buscar detalhes, ou falha ao salvar no arquivo local
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
                 });
             }
         }).start();

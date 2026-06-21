@@ -749,8 +749,15 @@ public class TelaMusica {
             Alert c = new Alert(Alert.AlertType.CONFIRMATION, "Remover \"" + a.getNome() + "\"?");
             c.showAndWait().ifPresent(r -> {
                 if (r == ButtonType.OK) {
-                    try { ctrlArtista.remover(a.getNome()); mostrarArtistas(); }
-                    catch (Exception ex) { new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait(); }
+                    try {
+                        ctrlArtista.remover(a.getNome());
+                        mostrarArtistas();
+                    } catch (ArquivoNaoEncontradoException ex) {
+                        // Não deveria ocorrer aqui (o artista já está na tela), mas trata por segurança
+                        new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
+                    } catch (IOException ex) {
+                        new Alert(Alert.AlertType.ERROR, "Erro ao salvar a remoção no arquivo.").showAndWait();
+                    }
                 }
             });
         });
@@ -1009,10 +1016,25 @@ public class TelaMusica {
                             btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
                         });
                     }
-                } catch (Exception ex) {
+                } catch (ArquivoNaoEncontradoException ex) {
+                    // Busca válida, mas o Last.fm não retornou nenhum resultado
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
                         listaResultados.getChildren().add(labelPopup("❌  " + ex.getMessage()));
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
+                    });
+                } catch (DadosInvalidosException ex) {
+                    // Termo de busca vazio ou inválido
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("❌  " + ex.getMessage()));
+                        btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
+                    });
+                } catch (IOException ex) {
+                    // Falha de rede/conexão com a API do Last.fm
+                    Platform.runLater(() -> {
+                        listaResultados.getChildren().clear();
+                        listaResultados.getChildren().add(labelPopup("❌  Erro de conexão com o Last.fm. Verifique sua internet."));
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
                     });
                 }
@@ -1081,10 +1103,23 @@ public class TelaMusica {
                     new Alert(Alert.AlertType.INFORMATION,
                         resultado.nome + " adicionado como Single!").showAndWait();
                 });
-            } catch (Exception ex) {
+            } catch (ArquivoNaoEncontradoException ex) {
+                // A faixa estava na lista de busca, mas track.getInfo não retornou detalhes
                 Platform.runLater(() -> {
                     popup.close();
-                    new Alert(Alert.AlertType.ERROR, "Erro: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, "Faixa não encontrada: " + ex.getMessage()).showAndWait();
+                });
+            } catch (DadosInvalidosException ex) {
+                // Falha de validação ao adicionar (ex: nome vazio)
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Dados inválidos: " + ex.getMessage()).showAndWait();
+                });
+            } catch (IOException ex) {
+                // Falha de rede, ou falha ao salvar no arquivo local
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
                 });
             }
         }).start();
@@ -1114,10 +1149,23 @@ public class TelaMusica {
                         resultado.nome + " adicionado!\n" + nova.getFaixas().size() + " faixas importadas.")
                         .showAndWait();
                 });
-            } catch (Exception ex) {
+            } catch (ArquivoNaoEncontradoException ex) {
+                // O álbum estava na lista de busca, mas album.getinfo não retornou detalhes
                 Platform.runLater(() -> {
                     popup.close();
-                    new Alert(Alert.AlertType.ERROR, "Erro: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, "Álbum não encontrado: " + ex.getMessage()).showAndWait();
+                });
+            } catch (DadosInvalidosException ex) {
+                // Falha de validação ao adicionar (ex: nome vazio)
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Dados inválidos: " + ex.getMessage()).showAndWait();
+                });
+            } catch (IOException ex) {
+                // Falha de rede, ou falha ao salvar no arquivo local
+                Platform.runLater(() -> {
+                    popup.close();
+                    new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
                 });
             }
         }).start();
@@ -1157,8 +1205,16 @@ public class TelaMusica {
                             "Remover \"" + m.getNome() + "\"? Não pode ser desfeito.");
                         c.showAndWait().ifPresent(r -> {
                             if (r == ButtonType.OK) {
-                                try { ctrl.remover(m.getNome()); voltarHome(); popup.close(); }
-                                catch (Exception ex) { new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait(); }
+                                try {
+                                    ctrl.remover(m.getNome());
+                                    voltarHome();
+                                    popup.close();
+                                } catch (ArquivoNaoEncontradoException ex) {
+                                    // Não deveria ocorrer aqui (a obra já está na tela), mas trata por segurança
+                                    new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
+                                } catch (IOException ex) {
+                                    new Alert(Alert.AlertType.ERROR, "Erro ao salvar a remoção no arquivo.").showAndWait();
+                                }
                             }
                         });
                     });
@@ -1330,8 +1386,15 @@ public class TelaMusica {
                 Artista a = new Artista(tN.getText().trim());
                 a.setGenero(tG.getText().trim()); a.setPais(tP.getText().trim());
                 a.setUrlFoto(tF.getText().trim()); a.setDescricao(tD.getText().trim());
-                ctrlArtista.adicionar(a); popup.close();
-            } catch (Exception ex) { new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait(); }
+                ctrlArtista.adicionar(a);
+                popup.close();
+            } catch (DadosInvalidosException ex) {
+                // Exceção unchecked: regra de validação de dados do formulário
+                new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
+            } catch (IOException ex) {
+                // Exceção checked: falha ao salvar no arquivo local
+                new Alert(Alert.AlertType.ERROR, "Erro ao salvar o artista no arquivo.").showAndWait();
+            }
         });
 
         form.getChildren().addAll(
@@ -1368,8 +1431,14 @@ public class TelaMusica {
                 a.setNome(tN.getText().trim()); a.setGenero(tG.getText().trim());
                 a.setPais(tP.getText().trim()); a.setUrlFoto(tF.getText().trim());
                 a.setDescricao(tD.getText().trim());
-                ctrlArtista.editar(orig, a); popup.close();
-            } catch (Exception ex) { new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait(); }
+                ctrlArtista.editar(orig, a);
+                popup.close();
+            } catch (ArquivoNaoEncontradoException ex) {
+                // O nome original não foi encontrado na coleção ao tentar salvar a edição
+                new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
+            } catch (IOException ex) {
+                new Alert(Alert.AlertType.ERROR, "Erro ao salvar as alterações no arquivo.").showAndWait();
+            }
         });
 
         form.getChildren().addAll(
