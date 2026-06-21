@@ -8,11 +8,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controller da camada musical.
- * Gerencia a coleção polimórfica de Musica em memória e no disco.
- * Inclui geração de playlist por critério e histórico de escuta.
- */
+
 public class MusicaController {
 
     private List<Musica> biblioteca;
@@ -22,8 +18,6 @@ public class MusicaController {
         this.biblioteca = new ArrayList<>();
         carregar();
     }
-
-    // ── CRUD ────────────────────────────────────────────────────────────
 
     public void adicionar(Musica m) throws DadosInvalidosException, IOException {
         if (m.getNome() == null || m.getNome().trim().isEmpty())
@@ -63,13 +57,11 @@ public class MusicaController {
         salvar();
     }
 
-    // ── Registrar escuta e salvar ────────────────────────────────────────
     public void registrarEscuta(Musica m) throws IOException {
         m.registrarEscuta();
         salvar();
     }
 
-    // ── Histórico: retorna os N mais ouvidos recentemente ───────────────
     public List<Musica> getHistoricoRecente(int quantidade) {
         return biblioteca.stream()
             .filter(m -> m.getUltimaEscuta() != null)
@@ -78,7 +70,6 @@ public class MusicaController {
             .collect(Collectors.toList());
     }
 
-    /** Zera o histórico de escuta (última escuta + contador) de todas as obras */
     public void limparHistorico() throws IOException {
         for (Musica m : biblioteca) {
             m.limparHistoricoEscuta();
@@ -86,20 +77,9 @@ public class MusicaController {
         salvar();
     }
 
-    // ── Gerador de Playlist por critério ────────────────────────────────
-    /**
-     * Gera uma playlist filtrada por gênero e/ou duração máxima total.
-     * Ordena por nota (melhor avaliados primeiro), depois por mais ouvidos.
-     *
-     * @param genero        filtro de gênero (null ou vazio = ignora)
-     * @param duracaoMaxMin duração máxima da playlist em minutos (0 = sem limite)
-     * @return lista ordenada de músicas que cabem nos critérios
-     * @throws ArquivoNaoEncontradoException se nenhum item atender os critérios
-     */
     public List<Musica> gerarPlaylist(String genero, int duracaoMaxMin)
             throws ArquivoNaoEncontradoException {
 
-        // 1. Filtra por gênero se informado
         List<Musica> candidatos = biblioteca.stream()
             .filter(m -> {
                 if (genero == null || genero.trim().isEmpty()) return true;
@@ -112,19 +92,16 @@ public class MusicaController {
             throw new ArquivoNaoEncontradoException(
                 "Nenhuma obra encontrada" + (genero != null && !genero.isEmpty() ? " com gênero: " + genero : "") + ".");
 
-        // 2. Ordena: melhor nota primeiro, depois mais ouvido
         candidatos.sort(Comparator
             .comparingInt(Musica::getNota).reversed()
             .thenComparingInt(Musica::getTotalEscutas).reversed());
 
-        // 3. Aplica limite de duração se informado
         if (duracaoMaxMin > 0) {
             int limiteSegundos = duracaoMaxMin * 60;
             List<Musica> playlist = new ArrayList<>();
             int acumulado = 0;
             for (Musica m : candidatos) {
                 int dur = m.getDuracaoTotalSegundos();
-                // inclui mesmo sem duração cadastrada (dur == 0)
                 if (dur == 0 || acumulado + dur <= limiteSegundos) {
                     playlist.add(m);
                     acumulado += dur;
@@ -139,7 +116,6 @@ public class MusicaController {
         return candidatos;
     }
 
-    // ── Estatísticas ────────────────────────────────────────────────────
     public int getTotalSegundos() {
         return biblioteca.stream().mapToInt(Musica::getDuracaoTotalSegundos).sum();
     }
@@ -176,7 +152,6 @@ public class MusicaController {
 
     public List<Musica> getBiblioteca() { return biblioteca; }
 
-    // ── Persistência ────────────────────────────────────────────────────
     @SuppressWarnings("unchecked")
     private void carregar() {
         File f = new File(ARQUIVO);

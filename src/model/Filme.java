@@ -4,7 +4,7 @@ public class Filme extends Arquivo implements Status {
     private String diretor;
     private int duracao;
     private String elencoPrincipal;
-    private int status=0; //em porcentagem
+    private int status=0; 
 
     public Filme(String nome) {
         super(nome);

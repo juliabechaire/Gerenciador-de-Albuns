@@ -20,7 +20,6 @@ public abstract class Arquivo implements Avaliavel, Serializable {
 
     public abstract String exibirInformacoes();
 
-    // ── Getters e Setters ────────────────────────────────────────────────
     public String getNome() {
         return nome;
     }

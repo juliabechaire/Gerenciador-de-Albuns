@@ -14,14 +14,13 @@ public class Artista implements Serializable {
     private String nome;
     private String urlFoto;
     private String genero;
-    private String descricao;   // texto livre escrito pelo usuário
+    private String descricao;   
     private String pais;
 
     public Artista(String nome) {
         this.nome = nome;
     }
 
-    // Getters e Setters
     public String getNome()              { return nome; }
     public void   setNome(String v)      { this.nome = v; }
 

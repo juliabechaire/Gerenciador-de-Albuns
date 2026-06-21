@@ -17,19 +17,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Serviço de integração com a API do Last.fm.
- * Responsável por buscar álbuns, faixas individuais (singles) e suas faixas.
- * Exceções são lançadas aqui (camada controller) e tratadas na view.
- */
+
 public class LastFmService {
 
     private static final String API_KEY  = "93bd1c2545d911220f27047b8ffaa5a8";
     private static final String BASE_URL = "http://ws.audioscrobbler.com/2.0/";
 
-    // =====================================================================
-    //  BUSCA DE ÁLBUNS (Álbum de Estúdio, EP, Álbum ao Vivo)
-    // =====================================================================
+    
     public List<ResultadoBusca> buscarAlbum(String termo)
             throws ArquivoNaoEncontradoException, IOException, DadosInvalidosException {
 
@@ -66,7 +60,6 @@ public class LastFmService {
         return resultados;
     }
 
-    /** Importa álbum completo (com tracklist) para um objeto Musica. */
     public void importarAlbumCompleto(Musica musica, String nomeAlbum, String nomeArtista)
             throws ArquivoNaoEncontradoException, IOException {
 
@@ -118,10 +111,7 @@ public class LastFmService {
         musica.importarDados("last.fm");
     }
 
-    // =====================================================================
-    //  BUSCA DE FAIXA INDIVIDUAL (para o tipo Single)
-    //  Usa track.search — busca por uma música específica, não um álbum.
-    // =====================================================================
+    
     public List<ResultadoBuscaFaixa> buscarFaixa(String termo)
             throws ArquivoNaoEncontradoException, IOException, DadosInvalidosException {
 
@@ -158,9 +148,6 @@ public class LastFmService {
         return resultados;
     }
 
-    /** Importa uma faixa individual (Single) usando track.getInfo.
-     *  Diferente de importarAlbumCompleto: aqui a "obra" é a própria faixa,
-     *  então ela é adicionada como única entrada na tracklist do Single. */
     public void importarFaixaIndividual(Musica musica, String nomeFaixa, String nomeArtista)
             throws ArquivoNaoEncontradoException, IOException {
 
@@ -183,24 +170,20 @@ public class LastFmService {
             ? track.getJSONObject("artist").optString("name", nomeArtista)
             : nomeArtista);
 
-        // Capa do álbum ao qual a faixa pertence (se disponível)
         JSONObject albumInfo = track.optJSONObject("album");
         if (albumInfo != null) {
             musica.setUrlCapa(extrairMelhorCapa(albumInfo.optJSONArray("image")));
         }
 
-        // Duração da própria faixa (em milissegundos na API, convertendo para segundos)
         int duracaoMs = track.optInt("duration", 0);
         int duracaoSeg = duracaoMs > 0 ? duracaoMs / 1000 : 0;
 
-        // Gênero via tags
         try {
             JSONArray tags = track.getJSONObject("toptags").getJSONArray("tag");
             if (tags.length() > 0)
                 musica.setGenero(tags.getJSONObject(0).optString("name", ""));
         } catch (Exception ignored) {}
 
-        // A própria faixa é a única "faixa" desse Single
         musica.addFaixa(new Faixa(1, musica.getNome(), duracaoSeg));
 
         musica.setUrlLink("https://www.last.fm/music/"
@@ -210,9 +193,8 @@ public class LastFmService {
         musica.importarDados("last.fm");
     }
 
-    // ── Requisição HTTP simples ─────────────────────────────────────────
     private String fazerRequisicao(String urlStr) throws IOException {
-        URL url = new URL(urlStr);
+        URL url = java.net.URI.create(urlStr).toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(8000);
@@ -231,7 +213,42 @@ public class LastFmService {
         return sb.toString();
     }
 
-    // ── Escolhe a maior imagem disponível no array de capas ─────────────
+
+    public void buscarArtistaInfo(Artista artista, String nomeArtista)
+            throws ArquivoNaoEncontradoException, IOException, DadosInvalidosException {
+
+        if (nomeArtista == null || nomeArtista.trim().isEmpty())
+            throw new DadosInvalidosException("O nome do artista não pode ser vazio.");
+
+        String encoded = URLEncoder.encode(nomeArtista.trim(), StandardCharsets.UTF_8);
+        String url = BASE_URL + "?method=artist.getinfo&artist=" + encoded
+                   + "&api_key=" + API_KEY + "&format=json";
+
+        String resposta = fazerRequisicao(url);
+        JSONObject json = new JSONObject(resposta);
+
+        if (json.has("error"))
+            throw new ArquivoNaoEncontradoException("Artista não encontrado no Last.fm: " + nomeArtista);
+
+        JSONObject artistJson = json.getJSONObject("artist");
+
+        artista.setNome(artistJson.optString("name", nomeArtista));
+        artista.setUrlFoto(extrairMelhorCapa(artistJson.optJSONArray("image")));
+
+        try {
+            JSONArray tags = artistJson.getJSONObject("tags").getJSONArray("tag");
+            if (tags.length() > 0)
+                artista.setGenero(tags.getJSONObject(0).optString("name", ""));
+        } catch (Exception ignored) {}
+
+        try {
+            String bio = artistJson.getJSONObject("bio").optString("summary", "");
+            bio = bio.replaceAll("<a href=.*?</a>", "").trim();
+            if (!bio.isEmpty())
+                artista.setDescricao(bio);
+        } catch (Exception ignored) {}
+    }
+
     private String extrairMelhorCapa(JSONArray images) {
         if (images == null) return "";
         String[] prioridade = {"mega", "extralarge", "large", "medium", "small"};
@@ -247,7 +264,6 @@ public class LastFmService {
         return "";
     }
 
-    // ── Classe interna: resultado simplificado da busca de álbum ────────
     public static class ResultadoBusca {
         public final String nome;
         public final String artista;
@@ -263,7 +279,6 @@ public class LastFmService {
         public String toString() { return nome + " — " + artista; }
     }
 
-    // ── Classe interna: resultado simplificado da busca de faixa ────────
     public static class ResultadoBuscaFaixa {
         public final String nome;
         public final String artista;

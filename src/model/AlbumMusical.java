@@ -1,9 +1,6 @@
 package model;
 
-/**
- * Álbum de estúdio completo.
- * Atributo extra: número de discos (álbuns duplos, etc.)
- */
+
 public class AlbumMusical extends Musica {
 
     private static final long serialVersionUID = 1L;
@@ -33,7 +30,6 @@ public class AlbumMusical extends Musica {
 
     @Override
     public void importarDados(String dados) {
-        // preenchido pelo LastFmService — marcamos como importado
         this.importado = true;
     }
 

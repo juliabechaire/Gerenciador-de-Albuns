@@ -9,10 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Gerencia a coleção de artistas favoritos.
- * Persiste em dados/artistas.dat.
- */
+
 public class ArtistaController {
 
     private List<Artista> artistas;

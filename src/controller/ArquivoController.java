@@ -27,8 +27,7 @@ public class ArquivoController {
         repo.salvar(this.biblioteca);
     }
 
-    // Lança ArquivoNaoEncontradoException se o termo não corresponder a nenhum item
-    // Exceção propagada daqui (controller) para ser tratada na view
+    
     public List<Arquivo> buscar_palavra_chave(String palavra) throws ArquivoNaoEncontradoException
     {
         if(palavra == null || palavra.isEmpty())
@@ -46,7 +45,6 @@ public class ArquivoController {
             }
         }
 
-        // Lançada na camada controller quando nenhum resultado é encontrado
         if(filtrados.isEmpty())
         {
             throw new ArquivoNaoEncontradoException(palavra);
@@ -55,7 +53,6 @@ public class ArquivoController {
         return filtrados;
     }
 
-    // Lança ArquivoNaoEncontradoException se o título não existir na biblioteca
     public void remover_busca(String titulo) throws IOException, ArquivoNaoEncontradoException
     {
         boolean encontrado = false;
@@ -69,7 +66,6 @@ public class ArquivoController {
             }
         }
 
-        // Lançada na camada controller quando o item não existe para remoção
         if(!encontrado)
         {
             throw new ArquivoNaoEncontradoException(titulo);
@@ -91,7 +87,6 @@ public class ArquivoController {
         repo.salvar(this.biblioteca);
     }
 
-    // Método auxiliar para a view obter a lista completa
     public List<Arquivo> getBiblioteca() {
         return this.biblioteca;
     }   

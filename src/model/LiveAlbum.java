@@ -1,9 +1,6 @@
 package model;
 
-/**
- * Álbum ao vivo: gravado em apresentação ao vivo.
- * Atributos extras: local e cidade do show.
- */
+
 public class LiveAlbum extends Musica {
 
     private static final long serialVersionUID = 1L;

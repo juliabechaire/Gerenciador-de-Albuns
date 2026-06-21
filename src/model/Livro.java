@@ -3,7 +3,7 @@ package model;
 public class Livro extends Arquivo implements Status {
     private String autor;
     private int numeroPaginas;
-    private int status=0; //em porcentagem
+    private int status=0; 
 
     public Livro(String nome) {
         super(nome);

@@ -8,7 +8,6 @@ import controller.TMDBService.ResultadoBuscaFilme;
 import model.*;
 import exception.DadosInvalidosException;
 import exception.ArquivoNaoEncontradoException;
-import view.TelaMusica;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -55,14 +54,6 @@ public class TelaPrincipal extends Application {
     private final String[] vidsFilmes = {
         "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
         "https://www.youtube.com/watch?v=eRsGyueVLvQ"
-    };
-    private final String[] imgsAlbuns = {
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500",
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500"
-    };
-    private final String[] vidsAlbuns = {
-        "https://www.youtube.com/watch?v=9X8SGu-sOas",
-        "https://www.youtube.com/watch?v=jfKfPfyJRdk"
     };
     private final String[] imgsLivros = {
         "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500",
@@ -142,10 +133,7 @@ public class TelaPrincipal extends Application {
                 renderizarTodasAsSecoes(lista.stream().filter(a -> a instanceof Livro).collect(Collectors.toList()));
                 break;
             default:
-                // Filtra álbuns — eles ficam no Módulo Musical
-                renderizarTodasAsSecoes(lista.stream()
-                    .filter(a -> !(a instanceof Album))
-                    .collect(Collectors.toList()));
+                renderizarTodasAsSecoes(lista);
         }
     }
 
@@ -591,8 +579,7 @@ public class TelaPrincipal extends Application {
                 listaResultados.getChildren().clear();
                 listaResultados.getChildren().add(labelPopup("Clique no item que deseja remover:"));
                 for (Arquivo a : encontrados) {
-                    // Trata Album por segurança: pode existir em .dat salvos de versões anteriores
-                    String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
+                    String icone = a instanceof Filme ? "🎬" : "📚";
                     Button btnItem = new Button(icone + "  " + a.getNome());
                     btnItem.setMaxWidth(Double.MAX_VALUE);
                     btnItem.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
@@ -673,8 +660,7 @@ public class TelaPrincipal extends Application {
                 listaResultados.getChildren().clear();
                 listaResultados.getChildren().add(labelPopup("Clique no item que deseja editar:"));
                 for (Arquivo a : encontrados) {
-                    // Trata Album por segurança: pode existir em .dat salvos de versões anteriores
-                    String icone = a instanceof Album ? "🎵" : a instanceof Filme ? "🎬" : "📚";
+                    String icone = a instanceof Filme ? "🎬" : "📚";
                     Button btnItem = new Button(icone + "  " + a.getNome());
                     btnItem.setMaxWidth(Double.MAX_VALUE);
                     btnItem.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
@@ -725,13 +711,7 @@ public class TelaPrincipal extends Application {
         TextField txtExtra  = new TextField();
 
         String labelExtra;
-        // Album tratado aqui por segurança: caso exista em dados/biblioteca.dat
-        // de uma versão anterior do app (antes da remoção da exibição de Álbuns
-        // do Cofre), ainda é possível encontrá-lo via busca e editá-lo.
-        if (arquivo instanceof Album) {
-            labelExtra = "Banda/Artista:";
-            txtExtra.setText(safe(((Album) arquivo).getBanda(), ""));
-        } else if (arquivo instanceof Filme) {
+        if (arquivo instanceof Filme) {
             labelExtra = "Diretor:";
             txtExtra.setText(safe(((Filme) arquivo).getDiretor(), ""));
         } else {
@@ -756,7 +736,7 @@ public class TelaPrincipal extends Application {
         );
 
         // Campo de Status (% assistido/lido) — só para Filme e Livro,
-        // que implementam a interface Status. Album não tem esse conceito.
+        // que implementam a interface Status.
         Slider sliderStatus = new Slider(0, 100, 0);
         Label lblStatusValor = new Label();
         if (arquivo instanceof Status) {
@@ -800,8 +780,7 @@ public class TelaPrincipal extends Application {
                 String anoStr = txtAno.getText().trim();
                 arquivo.setAnoLancamento(anoStr.isEmpty() ? 0 : Integer.parseInt(anoStr));
 
-                if (arquivo instanceof Album)      ((Album) arquivo).setBanda(txtExtra.getText().trim());
-                else if (arquivo instanceof Filme) ((Filme) arquivo).setDiretor(txtExtra.getText().trim());
+                if (arquivo instanceof Filme)      ((Filme) arquivo).setDiretor(txtExtra.getText().trim());
                 else if (arquivo instanceof Livro) ((Livro) arquivo).setAutor(txtExtra.getText().trim());
 
                 // O Status já foi atualizado em tempo real pelo listener do slider,

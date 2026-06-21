@@ -6,11 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Classe abstrata base para todas as obras musicais do sistema.
- * Define atributos comuns e obriga subclasses a implementar
- * exibirInformacoes() e getTipo().
- */
+
 public abstract class Musica implements Serializable, Importavel, Avaliavel {
 
     private static final long serialVersionUID = 1L;
@@ -26,7 +22,6 @@ public abstract class Musica implements Serializable, Importavel, Avaliavel {
     protected boolean importado;
     protected List<Faixa> faixas;
 
-    // Histórico de escuta
     protected LocalDateTime ultimaEscuta;
     protected int           totalEscutas;
 
@@ -39,12 +34,10 @@ public abstract class Musica implements Serializable, Importavel, Avaliavel {
         this.totalEscutas = 0;
     }
 
-    // ── Abstratos ───────────────────────────────────────────────────────
     public abstract String getTipo();
     public abstract String exibirInformacoes();
 
-    // ── Histórico de escuta ─────────────────────────────────────────────
-    /** Chamado toda vez que o usuário abre o painel de detalhes */
+    
     public void registrarEscuta() {
         this.ultimaEscuta = LocalDateTime.now();
         this.totalEscutas++;
@@ -53,7 +46,6 @@ public abstract class Musica implements Serializable, Importavel, Avaliavel {
     public LocalDateTime getUltimaEscuta() { return ultimaEscuta; }
     public int getTotalEscutas()           { return totalEscutas; }
 
-    /** Zera a última escuta e o contador de escutas desta obra */
     public void limparHistoricoEscuta() {
         this.ultimaEscuta = null;
         this.totalEscutas = 0;
@@ -64,7 +56,6 @@ public abstract class Musica implements Serializable, Importavel, Avaliavel {
         return ultimaEscuta.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
-    // ── Duração ─────────────────────────────────────────────────────────
     public int getDuracaoTotalSegundos() {
         return faixas.stream().mapToInt(Faixa::getDuracaoSegundos).sum();
     }
@@ -78,7 +69,6 @@ public abstract class Musica implements Serializable, Importavel, Avaliavel {
         return String.format("%dm %02ds", min, seg);
     }
 
-    // ── Implementação da interface Avaliavel ─────────────────────────────
     @Override
     public void avaliar(int nota, String comentario) {
         this.nota       = nota;
@@ -91,11 +81,9 @@ public abstract class Musica implements Serializable, Importavel, Avaliavel {
     @Override
     public String getComentario()    { return comentario; }
 
-    // ── Importavel ──────────────────────────────────────────────────────
     @Override
     public boolean foiImportado() { return importado; }
 
-    // ── Getters e Setters ───────────────────────────────────────────────
     public String getNome()             { return nome; }
     public void   setNome(String v)     { this.nome = v; }
 

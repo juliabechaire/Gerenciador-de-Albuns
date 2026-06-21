@@ -1,9 +1,6 @@
 package model;
 
-/**
- * Extended Play: lançamento intermediário entre single e álbum.
- * Convenção: 4 a 6 faixas.
- */
+
 public class EP extends Musica {
 
     private static final long serialVersionUID = 1L;

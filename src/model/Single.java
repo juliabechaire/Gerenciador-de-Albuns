@@ -1,13 +1,9 @@
 package model;
 
-/**
- * Single: lançamento de 1 a 3 faixas.
- * Atributo extra: indica se é lado A ou lado B de uma era de álbum.
- */
 public class Single extends Musica {
 
     private static final long serialVersionUID = 1L;
-    private String eraDoAlbum; // ex: "Era Midnights"
+    private String eraDoAlbum;
 
     public Single(String nome, String artista) {
         super(nome, artista);

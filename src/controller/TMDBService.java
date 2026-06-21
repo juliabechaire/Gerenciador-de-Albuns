@@ -17,18 +17,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Serviço de integração com a API do TMDB (The Movie Database).
- * Busca filmes, pôster, elenco, diretor, sinopse e gênero.
- * Exceções lançadas aqui (camada service) e tratadas na view.
- */
 public class TMDBService {
 
     private static final String API_KEY  = "57c1052c29bc59b009da268c1f53f5c4";
     private static final String BASE_URL = "https://api.themoviedb.org/3";
     private static final String IMG_BASE = "https://image.tmdb.org/t/p/w500";
 
-    // ── Busca filmes pelo nome (retorna lista de candidatos) ─────────────
     public List<ResultadoBuscaFilme> buscarFilme(String termo)
             throws ArquivoNaoEncontradoException, IOException, DadosInvalidosException {
 
@@ -60,7 +54,6 @@ public class TMDBService {
         return resultados;
     }
 
-    // ── Importa detalhes completos de um filme para o objeto Filme ───────
     public void importarFilmeCompleto(Filme filme, int tmdbId)
             throws ArquivoNaoEncontradoException, IOException {
 
@@ -86,15 +79,12 @@ public class TMDBService {
 
         filme.setDuracao(json.optInt("runtime", 0));
 
-        // Gênero — pega o primeiro da lista
         JSONArray generos = json.optJSONArray("genres");
         if (generos != null && generos.length() > 0)
             filme.setGenero(generos.getJSONObject(0).optString("name", ""));
 
-        // Sinopse como link de referência (TMDB não tem link de "assistir" público)
         filme.setLink("https://www.themoviedb.org/movie/" + tmdbId);
 
-        // Diretor e elenco via credits
         try {
             JSONObject credits = json.getJSONObject("credits");
             JSONArray crew = credits.optJSONArray("crew");
@@ -120,9 +110,8 @@ public class TMDBService {
         } catch (Exception ignored) {}
     }
 
-    // ── Requisição HTTP simples ─────────────────────────────────────────
     private String fazerRequisicao(String urlStr) throws IOException {
-        URL url = new URL(urlStr);
+        URL url = java.net.URI.create(urlStr).toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(8000);
@@ -144,7 +133,6 @@ public class TMDBService {
         return sb.toString();
     }
 
-    // ── Classe interna: resultado simplificado da busca ─────────────────
     public static class ResultadoBuscaFilme {
         public final int id;
         public final String titulo;

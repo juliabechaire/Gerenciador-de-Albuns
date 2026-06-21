@@ -2,17 +2,13 @@ package model;
 
 import java.io.Serializable;
 
-/**
- * Representa uma faixa individual dentro de uma obra musical.
- * Armazena título, número na tracklist e duração em segundos.
- */
 public class Faixa implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private int numero;
     private String titulo;
-    private int duracaoSegundos; // duração em segundos
+    private int duracaoSegundos; 
 
     public Faixa(int numero, String titulo, int duracaoSegundos) {
         this.numero       = numero;
@@ -24,7 +20,6 @@ public class Faixa implements Serializable {
     public String getTitulo()       { return titulo; }
     public int getDuracaoSegundos() { return duracaoSegundos; }
 
-    /** Retorna a duração formatada como mm:ss */
     public String getDuracaoFormatada() {
         int min = duracaoSegundos / 60;
         int seg = duracaoSegundos % 60;

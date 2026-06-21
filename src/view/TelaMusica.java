@@ -45,7 +45,6 @@ public class TelaMusica {
     private static final String BG      = "#141420";
     private static final String CARD    = "#1a1a3e";
     private static final String ACCENT  = "#7c3aed";
-    private static final String ACCENT2 = "#a78bfa";
     private static final String GOLD    = "#f6c90e";
     private static final String TEXT    = "#e8e6f0";
     private static final String MUTED   = "#9d9ab5";
@@ -97,17 +96,14 @@ public class TelaMusica {
         sb.setStyle("-fx-background-color:#0f0f1e; -fx-min-width:160px; -fx-max-width:160px;"
                   + "-fx-border-color:#1e1e40; -fx-border-width:0 1 0 0;");
 
-        // Logo
         Label logo = new Label("🎵 COFRE");
         logo.getStyleClass().add("sidebar-logo");
         logo.setStyle("-fx-font-family:Impact; -fx-font-size:18px; -fx-text-fill:#a78bfa;"
                     + "-fx-padding:16 0 20 16;");
 
-        // Separador visual
         Region divTop = new Region();
         divTop.setStyle("-fx-background-color:#1e1e40; -fx-min-height:1px; -fx-max-height:1px;");
 
-        // Seção BIBLIOTECA
         Label lblBib = new Label("BIBLIOTECA");
         lblBib.setStyle("-fx-font-family:'Segoe UI'; -fx-font-size:10px; -fx-text-fill:#6b6890;"
                       + "-fx-font-weight:bold; -fx-padding:14 0 4 16;");
@@ -117,7 +113,6 @@ public class TelaMusica {
             if (cenaAnterior != null) {
                 palco.setScene(cenaAnterior);
             } else {
-                // Cena anterior não disponível — abre TelaPrincipal
                 view.TelaPrincipal tp = new view.TelaPrincipal();
                 try {
                     tp.start(palco);
@@ -127,7 +122,6 @@ public class TelaMusica {
             }
         });
 
-        // Seção GERENCIAR
         Label lblGer = new Label("GERENCIAR");
         lblGer.setStyle("-fx-font-family:'Segoe UI'; -fx-font-size:10px; -fx-text-fill:#6b6890;"
                       + "-fx-font-weight:bold; -fx-padding:14 0 4 16;");
@@ -140,7 +134,6 @@ public class TelaMusica {
         btnEditar.setOnAction(e    -> fluxoEditar());
         btnRemover.setOnAction(e   -> fluxoRemover());
 
-        // Seção HISTÓRICO
         Label lblHist = new Label("HISTÓRICO");
         lblHist.setStyle("-fx-font-family:'Segoe UI'; -fx-font-size:10px; -fx-text-fill:#6b6890;"
                         + "-fx-font-weight:bold; -fx-padding:14 0 4 16;");
@@ -162,11 +155,9 @@ public class TelaMusica {
             });
         });
 
-        // Espaço empurrando para baixo
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        // Versão no rodapé da sidebar
         Label lblVersao = new Label("v1.0  •  Last.fm");
         lblVersao.setStyle("-fx-font-size:10px; -fx-text-fill:#3d3b5e; -fx-padding:0 0 8 16;");
 
@@ -197,13 +188,11 @@ public class TelaMusica {
         return b;
     }
 
-    // ── TOPO ─────────────────────────────────────────────────────────────
     private VBox criarTopo() {
         VBox topo = new VBox(10);
         topo.setPadding(new Insets(16, 16, 0, 16));
         topo.setStyle("-fx-background-color:" + BG + ";");
 
-        // Linha 1: busca + filtro
         HBox linhaBusca = new HBox(10);
         linhaBusca.setAlignment(Pos.CENTER_LEFT);
 
@@ -242,7 +231,6 @@ public class TelaMusica {
 
         linhaBusca.getChildren().addAll(txtBusca, btnBuscar, menuTipo, btnHome);
 
-        // Linha 2: 4 cards de ação em destaque
         HBox linhaAcoes = new HBox(12);
         linhaAcoes.setPadding(new Insets(8, 0, 12, 0));
         linhaAcoes.setAlignment(Pos.CENTER_LEFT);
@@ -258,7 +246,6 @@ public class TelaMusica {
         return topo;
     }
 
-    /** Card de ação visual (Artistas, Playlist, Dashboard, Avaliados) */
     private VBox actionCard(String icone, String titulo, String sub,
                              boolean gold, javafx.event.EventHandler<javafx.event.ActionEvent> acao) {
         VBox card = new VBox(4);
@@ -299,18 +286,14 @@ public class TelaMusica {
         return card;
     }
 
-    // (containerCentral é criado diretamente em mostrar())
-
-    // ── RENDERIZAÇÃO ─────────────────────────────────────────────────────
+    
     private void renderizarHome() {
         containerCentral.getChildren().clear();
 
-        // Saudação
         Label saudacao = new Label("Bem-vindo de volta 👋");
         saudacao.setStyle("-fx-font-family:Impact; -fx-font-size:22px; -fx-text-fill:#a78bfa;");
         containerCentral.getChildren().add(saudacao);
 
-        // Ouvidos recentemente
         List<Musica> recentes = ctrl.getHistoricoRecente(6);
         if (!recentes.isEmpty()) {
             containerCentral.getChildren().add(criarSecao("🕐 Ouvidos Recentemente", recentes));
@@ -375,7 +358,6 @@ public class TelaMusica {
         return secao;
     }
 
-    // ── CARD DE MÍDIA ────────────────────────────────────────────────────
     private VBox criarCard(Musica m) {
         VBox card = new VBox(5);
         card.setAlignment(Pos.TOP_CENTER);
@@ -415,7 +397,6 @@ public class TelaMusica {
             + "-fx-border-color:#2d2b5e; -fx-border-radius:10; -fx-border-width:1; -fx-cursor:hand;");
     }
 
-    // ── DETALHES ─────────────────────────────────────────────────────────
     private void mostrarDetalhes(Musica m) {
         try { ctrl.registrarEscuta(m); } catch (IOException ignored) {}
 
@@ -423,7 +404,6 @@ public class TelaMusica {
         estilizarBtn(voltar, CARD, MUTED);
         voltar.setOnAction(e -> voltarHome());
 
-        // Capa + info lado a lado
         HBox linha = new HBox(22);
         linha.setAlignment(Pos.TOP_LEFT);
 
@@ -448,7 +428,6 @@ public class TelaMusica {
             info.getChildren().add(ll);
         }
 
-        // Última escuta
         Label lblEscuta = new Label("🕐  " + m.getUltimaEscutaFormatada()
             + (m.getTotalEscutas() > 0 ? "  (" + m.getTotalEscutas() + "x)" : ""));
         lblEscuta.setStyle("-fx-font-size:11px; -fx-font-style:italic; -fx-text-fill:#6b6890;");
@@ -471,13 +450,10 @@ public class TelaMusica {
         HBox.setHgrow(info, Priority.ALWAYS);
         linha.getChildren().addAll(iv, info);
 
-        // Botão avaliar
         Button btnAvaliar = new Button(m.getNota() > 0 ? "🔄  Revisar Avaliação" : "⭐  Avaliar");
         estilizarBtn(btnAvaliar, GOLD, "#0d0d1a");
         btnAvaliar.setOnAction(e -> { popupAvaliar(m); mostrarDetalhes(m); });
 
-        // Botão "Ver no Last.fm" — abre a página do álbum no navegador,
-        // mesmo padrão do botão "Executar mídia" da Biblioteca
         Button btnLastFm = new Button("🌐  Ver no Last.fm");
         estilizarBtn(btnLastFm, ACCENT, TEXT);
         btnLastFm.setOnAction(e -> abrirNoLastFm(m));
@@ -488,7 +464,6 @@ public class TelaMusica {
         trocarCentro(centro);
     }
 
-    /** Abre a página do álbum/artista no site do Last.fm no navegador padrão */
     private void abrirNoLastFm(Musica m) {
         try {
             String artista = m.getArtista() != null ? m.getArtista().trim() : "";
@@ -506,7 +481,6 @@ public class TelaMusica {
         }
     }
 
-    // ── PLAYLIST ─────────────────────────────────────────────────────────
     private void popupPlaylist() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -618,7 +592,6 @@ public class TelaMusica {
         trocarCentro(sp);
     }
 
-    // ── ARTISTAS ─────────────────────────────────────────────────────────
     private void mostrarArtistas() {
         VBox painel = new VBox(16);
         painel.setPadding(new Insets(20));
@@ -774,7 +747,6 @@ public class TelaMusica {
         trocarCentro(sp);
     }
 
-    // ── DASHBOARD ────────────────────────────────────────────────────────
     private void mostrarDashboard() {
         VBox painel = new VBox(16);
         painel.setPadding(new Insets(20));
@@ -805,7 +777,6 @@ public class TelaMusica {
             statCard("🎤", "Live",          String.valueOf(bib.stream().filter(m->m instanceof LiveAlbum).count()))
         );
 
-        // Top mais ouvidos
         List<Musica> top3 = ctrl.getHistoricoRecente(3);
         VBox topOuvidos = new VBox(6);
         Label lblTO = new Label("🔥  Mais Ouvidos");
@@ -846,7 +817,6 @@ public class TelaMusica {
         return card;
     }
 
-    // ── AVALIADOS ────────────────────────────────────────────────────────
     private void mostrarAvaliados() {
         List<Musica> avaliados = ctrl.getBiblioteca().stream()
             .filter(m -> m.getNota() > 0).collect(Collectors.toList());
@@ -904,7 +874,6 @@ public class TelaMusica {
         Label lblNome = new Label(m.getNome());
         lblNome.setStyle("-fx-font-family:Impact; -fx-font-size:24px; -fx-text-fill:#e8e6f0;");
 
-        // Círculo de nota
         Circle circ = new Circle(40); circ.setFill(Color.web(GOLD));
         Text txtNota = new Text(String.valueOf(m.getNota()));
         txtNota.setFont(Font.font("Impact", FontWeight.BOLD, 32));
@@ -936,7 +905,6 @@ public class TelaMusica {
         trocarCentro(sp);
     }
 
-    // ── CADASTRO LAST.FM ─────────────────────────────────────────────────
     private void fluxoCadastroLastFm() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -984,7 +952,6 @@ public class TelaMusica {
             new Thread(() -> {
                 try {
                     if (ehSingle) {
-                        // Busca por FAIXA individual via track.search
                         List<controller.LastFmService.ResultadoBuscaFaixa> resultados = lastFm.buscarFaixa(termo);
                         Platform.runLater(() -> {
                             listaResultados.getChildren().clear();
@@ -1000,7 +967,6 @@ public class TelaMusica {
                             btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
                         });
                     } else {
-                        // Busca por ÁLBUM via album.search
                         List<ResultadoBusca> resultados = lastFm.buscarAlbum(termo);
                         Platform.runLater(() -> {
                             listaResultados.getChildren().clear();
@@ -1017,21 +983,18 @@ public class TelaMusica {
                         });
                     }
                 } catch (ArquivoNaoEncontradoException ex) {
-                    // Busca válida, mas o Last.fm não retornou nenhum resultado
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
                         listaResultados.getChildren().add(labelPopup("❌  " + ex.getMessage()));
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
                     });
                 } catch (DadosInvalidosException ex) {
-                    // Termo de busca vazio ou inválido
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
                         listaResultados.getChildren().add(labelPopup("❌  " + ex.getMessage()));
                         btnBuscar.setDisable(false); btnBuscar.setText("🔍  Buscar no Last.fm");
                     });
                 } catch (IOException ex) {
-                    // Falha de rede/conexão com a API do Last.fm
                     Platform.runLater(() -> {
                         listaResultados.getChildren().clear();
                         listaResultados.getChildren().add(labelPopup("❌  Erro de conexão com o Last.fm. Verifique sua internet."));
@@ -1055,7 +1018,6 @@ public class TelaMusica {
         popup.showAndWait();
     }
 
-    /** Cria o item visual (capa + texto) usado nas listas de resultado de busca */
     private HBox montarItemResultado(String texto, String urlCapa) {
         HBox item = new HBox(10);
         item.setAlignment(Pos.CENTER_LEFT);
@@ -1078,7 +1040,6 @@ public class TelaMusica {
         return item;
     }
 
-    /** Confirma e importa uma faixa individual (Single via track.getInfo) */
     private void confirmarEImportarFaixa(controller.LastFmService.ResultadoBuscaFaixa resultado) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -1104,19 +1065,16 @@ public class TelaMusica {
                         resultado.nome + " adicionado como Single!").showAndWait();
                 });
             } catch (ArquivoNaoEncontradoException ex) {
-                // A faixa estava na lista de busca, mas track.getInfo não retornou detalhes
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Faixa não encontrada: " + ex.getMessage()).showAndWait();
                 });
             } catch (DadosInvalidosException ex) {
-                // Falha de validação ao adicionar (ex: nome vazio)
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Dados inválidos: " + ex.getMessage()).showAndWait();
                 });
             } catch (IOException ex) {
-                // Falha de rede, ou falha ao salvar no arquivo local
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
@@ -1150,19 +1108,16 @@ public class TelaMusica {
                         .showAndWait();
                 });
             } catch (ArquivoNaoEncontradoException ex) {
-                // O álbum estava na lista de busca, mas album.getinfo não retornou detalhes
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Álbum não encontrado: " + ex.getMessage()).showAndWait();
                 });
             } catch (DadosInvalidosException ex) {
-                // Falha de validação ao adicionar (ex: nome vazio)
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Dados inválidos: " + ex.getMessage()).showAndWait();
                 });
             } catch (IOException ex) {
-                // Falha de rede, ou falha ao salvar no arquivo local
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
@@ -1180,7 +1135,6 @@ public class TelaMusica {
         }
     }
 
-    // ── REMOVER / EDITAR ─────────────────────────────────────────────────
     private void fluxoRemover() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -1210,7 +1164,6 @@ public class TelaMusica {
                                     voltarHome();
                                     popup.close();
                                 } catch (ArquivoNaoEncontradoException ex) {
-                                    // Não deveria ocorrer aqui (a obra já está na tela), mas trata por segurança
                                     new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
                                 } catch (IOException ex) {
                                     new Alert(Alert.AlertType.ERROR, "Erro ao salvar a remoção no arquivo.").showAndWait();
@@ -1363,7 +1316,6 @@ public class TelaMusica {
         popup.showAndWait();
     }
 
-    // ── ARTISTAS — popups ────────────────────────────────────────────────
     private void popupAdicionarArtista() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -1379,6 +1331,52 @@ public class TelaMusica {
         tD.setPrefRowCount(3);
         tD.setStyle("-fx-control-inner-background:#1a1a3e; -fx-text-fill:#e8e6f0;");
 
+        
+        Button btnBuscarLastFm = new Button("🔍  Buscar foto e bio no Last.fm");
+        estilizarBtn(btnBuscarLastFm, ACCENT, TEXT);
+        btnBuscarLastFm.setOnAction(e -> {
+            String nomeDigitado = tN.getText().trim();
+            if (nomeDigitado.isEmpty()) {
+                new Alert(Alert.AlertType.WARNING, "Digite o nome do artista antes de buscar.").showAndWait();
+                return;
+            }
+            btnBuscarLastFm.setDisable(true);
+            btnBuscarLastFm.setText("⏳  Buscando...");
+
+            new Thread(() -> {
+                try {
+                    Artista temp = new Artista(nomeDigitado);
+                    lastFm.buscarArtistaInfo(temp, nomeDigitado);
+                    Platform.runLater(() -> {
+                        tN.setText(temp.getNome());
+                        if (temp.getGenero() != null) tG.setText(temp.getGenero());
+                        if (temp.getUrlFoto() != null) tF.setText(temp.getUrlFoto());
+                        if (temp.getDescricao() != null) tD.setText(temp.getDescricao());
+                        btnBuscarLastFm.setDisable(false);
+                        btnBuscarLastFm.setText("🔍  Buscar foto e bio no Last.fm");
+                    });
+                } catch (ArquivoNaoEncontradoException ex) {
+                    Platform.runLater(() -> {
+                        new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
+                        btnBuscarLastFm.setDisable(false);
+                        btnBuscarLastFm.setText("🔍  Buscar foto e bio no Last.fm");
+                    });
+                } catch (DadosInvalidosException ex) {
+                    Platform.runLater(() -> {
+                        new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
+                        btnBuscarLastFm.setDisable(false);
+                        btnBuscarLastFm.setText("🔍  Buscar foto e bio no Last.fm");
+                    });
+                } catch (IOException ex) {
+                    Platform.runLater(() -> {
+                        new Alert(Alert.AlertType.ERROR, "Erro de conexão com o Last.fm.").showAndWait();
+                        btnBuscarLastFm.setDisable(false);
+                        btnBuscarLastFm.setText("🔍  Buscar foto e bio no Last.fm");
+                    });
+                }
+            }).start();
+        });
+
         Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
         s.setOnAction(e -> {
             try {
@@ -1389,23 +1387,22 @@ public class TelaMusica {
                 ctrlArtista.adicionar(a);
                 popup.close();
             } catch (DadosInvalidosException ex) {
-                // Exceção unchecked: regra de validação de dados do formulário
                 new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
             } catch (IOException ex) {
-                // Exceção checked: falha ao salvar no arquivo local
                 new Alert(Alert.AlertType.ERROR, "Erro ao salvar o artista no arquivo.").showAndWait();
             }
         });
 
         form.getChildren().addAll(
-            labelPopup("Nome *:"), tN, labelPopup("Gênero:"), tG,
+            labelPopup("Nome *:"), tN, btnBuscarLastFm,
+            labelPopup("Gênero:"), tG,
             labelPopup("País:"), tP, labelPopup("URL Foto:"), tF,
             labelPopup("Descrição:"), tD, s
         );
         ScrollPane sp = new ScrollPane(form);
         sp.setFitToWidth(true);
         sp.setStyle("-fx-background-color:#12122a; -fx-background:#12122a;");
-        popup.setScene(new Scene(sp, 420, 440));
+        popup.setScene(new Scene(sp, 420, 500));
         aplicarCssPopup(popup);
         popup.showAndWait();
     }
@@ -1434,7 +1431,6 @@ public class TelaMusica {
                 ctrlArtista.editar(orig, a);
                 popup.close();
             } catch (ArquivoNaoEncontradoException ex) {
-                // O nome original não foi encontrado na coleção ao tentar salvar a edição
                 new Alert(Alert.AlertType.WARNING, ex.getMessage()).showAndWait();
             } catch (IOException ex) {
                 new Alert(Alert.AlertType.ERROR, "Erro ao salvar as alterações no arquivo.").showAndWait();
@@ -1454,7 +1450,6 @@ public class TelaMusica {
         popup.showAndWait();
     }
 
-    // ── BUSCA ────────────────────────────────────────────────────────────
     private void acaoBuscar() {
         String termo = txtBusca.getText().trim();
         if (termo.isEmpty()) { voltarHome(); return; }
@@ -1469,15 +1464,12 @@ public class TelaMusica {
         }
     }
 
-    // ── UTILITÁRIOS ──────────────────────────────────────────────────────
     private void voltarHome() {
         scrollCentral.setContent(containerCentral);
         renderizarHome();
     }
 
-    /** Troca o conteúdo exibido na área central, mantendo o ScrollPane principal.
-     *  Se receber um ScrollPane (padrão usado em vários métodos), desembrulha
-     *  o conteúdo dele para evitar scroll duplicado. */
+    
     private void trocarCentro(javafx.scene.Node novoConteudo) {
         if (novoConteudo instanceof ScrollPane) {
             scrollCentral.setContent(((ScrollPane) novoConteudo).getContent());
@@ -1549,9 +1541,7 @@ public class TelaMusica {
         return (v==null||v.trim().isEmpty()) ? fb : v.trim();
     }
 
-    /** Aplica o estilos.css a uma Scene, com diagnóstico no console.
-     *  Procura em /resources/Estilos.css na raiz do classpath compilado
-     *  (deve corresponder a src/resources/Estilos.css). */
+   
     private void aplicarCss(Scene cena) {
         java.net.URL recurso = getClass().getResource("/resources/Estilos.css");
         if (recurso == null) {
@@ -1563,7 +1553,6 @@ public class TelaMusica {
         System.out.println("[CSS] estilos.css carregado com sucesso: " + recurso.toExternalForm());
     }
 
-    /** Aplica o CSS também a popups (Stages secundários) */
     private void aplicarCssPopup(Stage popup) {
         if (popup.getScene() != null) {
             aplicarCss(popup.getScene());
