@@ -30,18 +30,17 @@ import java.util.stream.Collectors;
 public class TelaMusica {
 
     private final Stage palco;
-    private final Scene cenaAnterior; // null se for a tela inicial
+    private final Scene cenaAnterior; 
     private MusicaController ctrl;
     private ArtistaController ctrlArtista;
     private LastFmService lastFm;
 
     private BorderPane layoutRaiz;
     private VBox containerCentral;
-    private ScrollPane scrollCentral;   // referência direta para trocar o conteúdo com segurança
+    private ScrollPane scrollCentral;  
     private TextField txtBusca;
     private VBox sidebar;
 
-    // Fallback sem CSS (caso o arquivo não carregue)
     private static final String BG      = "#141420";
     private static final String CARD    = "#1a1a3e";
     private static final String ACCENT  = "#7c3aed";
@@ -62,7 +61,6 @@ public class TelaMusica {
     }
 
     public void mostrar() {
-        // Layout raiz: sidebar à esquerda + conteúdo à direita
         layoutRaiz = new BorderPane();
         layoutRaiz.setStyle("-fx-background-color:" + BG + ";");
 
@@ -82,14 +80,12 @@ public class TelaMusica {
         renderizarHome();
 
         Scene cena = new Scene(layoutRaiz, 1050, 680);
-        aplicarCss(cena);
 
         palco.setTitle("Cofre Cultural 🎵");
         palco.setScene(cena);
         palco.show();
     }
 
-    // ── SIDEBAR ──────────────────────────────────────────────────────────
     private VBox criarSidebar() {
         VBox sb = new VBox(2);
         sb.getStyleClass().add("sidebar");

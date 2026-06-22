@@ -42,7 +42,6 @@ public class TelaPrincipal extends Application {
     private Stage palco;
     private BorderPane layoutRaiz;
 
-    // Filtro atual selecionado no MenuButton
     private String filtroAtual = "Todos";
 
     private final Random random = new Random();
@@ -66,7 +65,6 @@ public class TelaPrincipal extends Application {
 
     private static final String IMG_PLACEHOLDER = "https://placehold.co/140x160?text=Sem+Capa";
 
-    // Paleta de cores centralizada
     private static final String COR_FUNDO        = "#1a1a2e";
     private static final String COR_SUPERFICIE   = "#16213e";
     private static final String COR_CARD         = "#0f3460";
@@ -108,9 +106,6 @@ public class TelaPrincipal extends Application {
         palcoPrincipal.show();
     }
 
-    // =====================================================================
-    //  VOLTAR PARA BIBLIOTECA
-    // =====================================================================
     private void voltarParaBiblioteca() {
         containerCentral = new VBox(20);
         containerCentral.setPadding(new Insets(10, 0, 10, 0));
@@ -137,18 +132,13 @@ public class TelaPrincipal extends Application {
         }
     }
 
-    // =====================================================================
-    //  BARRA SUPERIOR
-    // =====================================================================
     private VBox criarBarraSuperior() {
         VBox painelTopo = new VBox(10);
         painelTopo.setPadding(new Insets(0, 0, 12, 0));
 
-        // Título do app
         Label lblApp = new Label("🎬 Cofre Cultural");
         lblApp.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + COR_ACENTO + ";");
 
-        // Linha de busca
         HBox linhaBusca = new HBox(8);
         linhaBusca.setAlignment(Pos.CENTER_LEFT);
 
@@ -163,7 +153,6 @@ public class TelaPrincipal extends Application {
         Button btnBuscar = estilizarBotao("🔍 Buscar", COR_ACENTO2, COR_TEXTO);
         btnBuscar.setOnAction(e -> acaoBuscar());
 
-        // ── MenuButton de filtro por categoria (substituí os 4 botões) ──
         MenuButton menuFiltro = new MenuButton("🌐 Todos ▾");
         menuFiltro.setStyle("-fx-background-color: " + COR_CARD + ";"
                           + "-fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 6;"
@@ -171,8 +160,7 @@ public class TelaPrincipal extends Application {
                           + "-fx-padding: 6 12 6 12;"
                           + "-fx-mark-color: " + COR_TEXTO + ";");
         menuFiltro.setMnemonicParsing(false);
-        // Força a cor do texto do botão — o skin padrão do JavaFX
-        // às vezes ignora -fx-text-fill simples em MenuButton
+
         menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO));
 
         MenuItem miTodos  = new MenuItem("🌐 Todos");
@@ -183,10 +171,8 @@ public class TelaPrincipal extends Application {
         miFilmes.setOnAction(e -> { filtroAtual = "Filmes"; menuFiltro.setText("🎬 Filmes ▾"); menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO)); voltarParaBiblioteca(); });
         miLivros.setOnAction(e -> { filtroAtual = "Livros"; menuFiltro.setText("📚 Livros ▾"); menuFiltro.setTextFill(javafx.scene.paint.Color.web(COR_TEXTO)); voltarParaBiblioteca(); });
 
-        // Álbuns removidos daqui — gerenciados no Módulo Musical
         menuFiltro.getItems().addAll(miTodos, miFilmes, miLivros);
 
-        // Botões de ação
         Button btnAvaliados = estilizarBotao("⭐ Avaliados", COR_DOURADO, "#1a1a2e");
         Button btnEditar    = estilizarBotao("✏️ Editar",   "#3498db",   COR_TEXTO);
         Button btnRemover   = estilizarBotao("🗑️ Remover",  COR_ACENTO,  COR_TEXTO);
@@ -208,7 +194,6 @@ public class TelaPrincipal extends Application {
         btnEditar.setOnAction(e  -> abrirFluxoEditarPorBusca());
         btnRemover.setOnAction(e -> abrirFluxoRemoverPorBusca());
 
-        // Botão que abre o Módulo Musical (TelaMusica) passando a cena atual para poder voltar
         Button btnMusica = estilizarBotao("🎵 Módulo Musical", "#7c3aed", COR_TEXTO);
         btnMusica.setOnAction(e -> {
             Scene cenaAtual = palco.getScene();
@@ -221,9 +206,6 @@ public class TelaPrincipal extends Application {
         return painelTopo;
     }
 
-    // =====================================================================
-    //  BARRA INFERIOR
-    // =====================================================================
     private HBox criarBarraInferior() {
         HBox barra = new HBox();
         barra.setPadding(new Insets(10, 0, 0, 0));
@@ -234,9 +216,6 @@ public class TelaPrincipal extends Application {
         return barra;
     }
 
-    // =====================================================================
-    //  RENDERIZAÇÃO
-    // =====================================================================
     private void renderizarTodasAsSecoes(List<Arquivo> lista) {
         containerCentral.getChildren().clear();
 
@@ -287,22 +266,17 @@ public class TelaPrincipal extends Application {
         return secao;
     }
 
-    // =====================================================================
-    //  CARD MINIATURA — só imagem + título, sem espaço em branco
-    // =====================================================================
     private VBox criarCardMiniatura(Arquivo arquivo) {
         VBox card = new VBox(5);
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(6));
 
-        // Imagem
         ImageView capa = new ImageView();
         capa.setFitWidth(120);
         capa.setFitHeight(155);
-        capa.setPreserveRatio(false); // preenche o espaço sem espaço em branco
+        capa.setPreserveRatio(false); 
         carregarImagem(capa, arquivo.getImagem(), 120, 155);
 
-        // Título — wrapping limitado a 2 linhas
         Label lblTitulo = new Label(arquivo.getNome() != null ? arquivo.getNome() : "Sem título");
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-alignment: center;"
                          + "-fx-text-fill: " + COR_TEXTO + ";");
@@ -312,7 +286,6 @@ public class TelaPrincipal extends Application {
 
         card.getChildren().addAll(capa, lblTitulo);
 
-        // Tamanho ajustado ao conteúdo (sem altura fixa que cria espaço vazio)
         card.setPrefWidth(136);
         card.setMaxWidth(136);
         card.setStyle("-fx-border-color: " + COR_ACENTO2 + "; -fx-border-radius: 8;"
@@ -329,9 +302,6 @@ public class TelaPrincipal extends Application {
         return card;
     }
 
-    // =====================================================================
-    //  PAINEL DE DETALHES — usa exibirInformacoes() de cada classe
-    // =====================================================================
     private void mostrarPainelDetalhes(Arquivo arquivo) {
         BorderPane painelDetalhes = new BorderPane();
         painelDetalhes.setPadding(new Insets(20));
@@ -345,12 +315,10 @@ public class TelaPrincipal extends Application {
         VBox conteudo = new VBox(16);
         conteudo.setPadding(new Insets(6, 0, 0, 0));
 
-        // Título
         Label lblNome = new Label(safe(arquivo.getNome(), "Sem título"));
         lblNome.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
         lblNome.setWrapText(true);
 
-        // Linha: imagem + informações (usando exibirInformacoes() da classe)
         HBox linhaInfos = new HBox(22);
         linhaInfos.setAlignment(Pos.TOP_LEFT);
 
@@ -360,13 +328,11 @@ public class TelaPrincipal extends Application {
         grandeCapa.setPreserveRatio(false);
         carregarImagem(grandeCapa, arquivo.getImagem(), 160, 210);
 
-        // Bloco de informações — lê direto de exibirInformacoes()
         VBox blocoInfos = new VBox(6);
         blocoInfos.setStyle("-fx-background-color: " + COR_SUPERFICIE + "; -fx-padding: 14;"
                           + "-fx-background-radius: 10;");
         blocoInfos.setPrefWidth(480);
 
-        // Quebra o texto de exibirInformacoes() em linhas e cria um Label por linha
         String[] linhas = arquivo.exibirInformacoes().split("\n");
         for (String linha : linhas) {
             Label l = new Label(linha);
@@ -378,7 +344,6 @@ public class TelaPrincipal extends Application {
         HBox.setHgrow(blocoInfos, Priority.ALWAYS);
         linhaInfos.getChildren().addAll(grandeCapa, blocoInfos);
 
-        // Link
         Hyperlink link = new Hyperlink("🚀 Abrir / Executar mídia");
         link.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: " + COR_ACENTO + ";");
         link.setOnAction(e -> {
@@ -394,7 +359,6 @@ public class TelaPrincipal extends Application {
             }
         });
 
-        // Botão único de avaliar / revisar
         int nota = arquivo.getNota();
         Button btnAvaliar = estilizarBotao(
             nota > 0 ? "🔄 Revisar Avaliação" : "⭐ Avaliar",
@@ -414,9 +378,6 @@ public class TelaPrincipal extends Application {
         layoutRaiz.setCenter(painelDetalhes);
     }
 
-    // =====================================================================
-    //  PAINEL DE AVALIADOS — lista cards e ao clicar mostra nota + crítica
-    // =====================================================================
     private void mostrarPainelAvaliados(List<Arquivo> avaliados) {
         BorderPane painel = new BorderPane();
         painel.setPadding(new Insets(20));
@@ -430,13 +391,11 @@ public class TelaPrincipal extends Application {
         Label titulo = new Label("⭐ Itens Avaliados");
         titulo.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + COR_DOURADO + ";");
 
-        // Grid de cards avaliados (mesma aparência dos cards da biblioteca)
         HBox gridCards = new HBox(14);
         gridCards.setPadding(new Insets(10, 0, 0, 0));
 
         for (Arquivo a : avaliados) {
             VBox card = criarCardMiniatura(a);
-            // Sobrescreve o clique: abre a view de avaliação em vez de detalhes
             card.setOnMouseClicked(ev -> mostrarDetalheAvaliacao(a));
             card.setOnMouseEntered(ev -> card.setStyle(
                 "-fx-border-color: " + COR_DOURADO + "; -fx-border-radius: 8;"
@@ -457,7 +416,6 @@ public class TelaPrincipal extends Application {
         layoutRaiz.setCenter(painel);
     }
 
-    // Detalhe de avaliação: título, imagem, nota em destaque, crítica
     private void mostrarDetalheAvaliacao(Arquivo arquivo) {
         BorderPane painel = new BorderPane();
         painel.setPadding(new Insets(24));
@@ -472,7 +430,6 @@ public class TelaPrincipal extends Application {
         painel.setTop(btnVoltar);
         BorderPane.setMargin(btnVoltar, new Insets(0, 0, 16, 0));
 
-        // Linha: imagem + lado direito
         HBox linha = new HBox(24);
         linha.setAlignment(Pos.TOP_LEFT);
 
@@ -489,7 +446,6 @@ public class TelaPrincipal extends Application {
         lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
         lblTitulo.setWrapText(true);
 
-        // Nota em destaque: círculo grande com o número
         int nota = arquivo.getNota();
         StackPane circleNota = criarCirculoNota(nota);
 
@@ -528,7 +484,6 @@ public class TelaPrincipal extends Application {
         layoutRaiz.setCenter(painel);
     }
 
-    // Círculo com número da nota em destaque
     private StackPane criarCirculoNota(int nota) {
         Circle circulo = new Circle(36);
         circulo.setFill(Color.web(COR_DOURADO));
@@ -542,9 +497,6 @@ public class TelaPrincipal extends Application {
         return sp;
     }
 
-    // =====================================================================
-    //  FLUXO REMOVER POR BUSCA
-    // =====================================================================
     private void abrirFluxoRemoverPorBusca() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -625,9 +577,6 @@ public class TelaPrincipal extends Application {
         popup.showAndWait();
     }
 
-    // =====================================================================
-    //  FLUXO EDITAR POR BUSCA
-    // =====================================================================
     private void abrirFluxoEditarPorBusca() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -691,9 +640,6 @@ public class TelaPrincipal extends Application {
         popup.showAndWait();
     }
 
-    // =====================================================================
-    //  FORMULÁRIO DE EDIÇÃO
-    // =====================================================================
     private void abrirFormularioEdicao(Arquivo arquivo) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -735,8 +681,6 @@ public class TelaPrincipal extends Application {
             labelPopup(labelExtra),   txtExtra
         );
 
-        // Campo de Status (% assistido/lido) — só para Filme e Livro,
-        // que implementam a interface Status.
         Slider sliderStatus = new Slider(0, 100, 0);
         Label lblStatusValor = new Label();
         if (arquivo instanceof Status) {
@@ -783,8 +727,6 @@ public class TelaPrincipal extends Application {
                 if (arquivo instanceof Filme)      ((Filme) arquivo).setDiretor(txtExtra.getText().trim());
                 else if (arquivo instanceof Livro) ((Livro) arquivo).setAutor(txtExtra.getText().trim());
 
-                // O Status já foi atualizado em tempo real pelo listener do slider,
-                // mas garantimos o valor final aqui também por segurança.
                 if (arquivo instanceof Status) {
                     ((Status) arquivo).setStatus((int) sliderStatus.getValue());
                 }
@@ -811,9 +753,6 @@ public class TelaPrincipal extends Application {
         popup.show();
     }
 
-    // =====================================================================
-    //  POPUP DE AVALIAÇÃO
-    // =====================================================================
     private void abrirPopUpAvaliar(Arquivo arquivo) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -864,9 +803,6 @@ public class TelaPrincipal extends Application {
         popup.showAndWait();
     }
 
-    // =====================================================================
-    //  POPUP DE CADASTRO — escolha do tipo, depois Manual ou via API
-    // =====================================================================
     private void abrirPopUpCadastro() {
         Stage popupTipo = new Stage();
         popupTipo.initModality(Modality.APPLICATION_MODAL);
@@ -900,7 +836,6 @@ public class TelaPrincipal extends Application {
         popupTipo.showAndWait();
     }
 
-    /** Segunda etapa: escolher entre cadastro manual ou busca via API */
     private void abrirEscolhaMetodo(String tipo) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -939,7 +874,6 @@ public class TelaPrincipal extends Application {
         popup.showAndWait();
     }
 
-    // ── CADASTRO VIA TMDB (Filme) ────────────────────────────────────────
     private void abrirBuscaTMDB() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -1062,7 +996,6 @@ public class TelaPrincipal extends Application {
         }).start();
     }
 
-    // ── CADASTRO VIA OPEN LIBRARY (Livro) ────────────────────────────────
     private void abrirBuscaOpenLibrary() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -1171,13 +1104,11 @@ public class TelaPrincipal extends Application {
                     new Alert(Alert.AlertType.INFORMATION, resultado.titulo + " adicionado com sucesso!").showAndWait();
                 });
             } catch (ArquivoNaoEncontradoException ex) {
-                // O livro estava na lista de busca, mas os detalhes não foram encontrados no Open Library
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Livro não encontrado: " + ex.getMessage()).showAndWait();
                 });
             } catch (IOException ex) {
-                // Falha de rede ao buscar detalhes, ou falha ao salvar no arquivo local
                 Platform.runLater(() -> {
                     popup.close();
                     new Alert(Alert.AlertType.ERROR, "Erro de conexão ou ao salvar o arquivo: " + ex.getMessage()).showAndWait();
@@ -1186,7 +1117,6 @@ public class TelaPrincipal extends Application {
         }).start();
     }
 
-    // ── CADASTRO MANUAL (Filme ou Livro) ─────────────────────────────────
     private void abrirCadastroManual(String tipo) {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL);
@@ -1275,9 +1205,6 @@ public class TelaPrincipal extends Application {
         popup.showAndWait();
     }
 
-    // =====================================================================
-    //  BUSCA NA BARRA PRINCIPAL
-    // =====================================================================
     private void acaoBuscar() {
         String termo = txtBusca.getText().trim();
         if (termo.isEmpty()) {
@@ -1295,14 +1222,10 @@ public class TelaPrincipal extends Application {
         }
     }
 
-    // =====================================================================
-    //  UTILITÁRIOS DE UI
-    // =====================================================================
     private String safe(String valor, String fallback) {
         return (valor == null || valor.trim().isEmpty()) ? fallback : valor.trim();
     }
 
-    /** Botão com cor de fundo e texto configuráveis. */
     private Button estilizarBotao(String texto, String corFundo, String corTexto) {
         Button b = new Button(texto);
         b.setStyle("-fx-background-color: " + corFundo + "; -fx-text-fill: " + corTexto
@@ -1311,14 +1234,12 @@ public class TelaPrincipal extends Application {
         return b;
     }
 
-    /** Label padrão para uso em popups escuros */
     private Label labelPopup(String texto) {
         Label l = new Label(texto);
         l.setStyle("-fx-font-size: 12px; -fx-text-fill: " + COR_TEXTO_SUAVE + ";");
         return l;
     }
 
-    /** Estiliza TextField para o tema escuro */
     private void estilizarCampo(TextField tf) {
         tf.setStyle("-fx-background-color: " + COR_CARD + "; -fx-text-fill: " + COR_TEXTO
                   + "; -fx-prompt-text-fill: " + COR_TEXTO_SUAVE
@@ -1338,9 +1259,6 @@ public class TelaPrincipal extends Application {
         }
     }
 
-    /** Aplica o estilos.css a uma Scene, com diagnóstico no console.
-     *  Procura em /resources/Estilos.css na raiz do classpath compilado
-     *  (deve corresponder a src/resources/Estilos.css). */
     private void aplicarCss(Scene cena) {
         java.net.URL recurso = getClass().getResource("/resources/Estilos.css");
         if (recurso == null) {
@@ -1352,7 +1270,6 @@ public class TelaPrincipal extends Application {
         System.out.println("[CSS] estilos.css carregado com sucesso: " + recurso.toExternalForm());
     }
 
-    /** Aplica o CSS também a popups (Stages secundários) */
     private void aplicarCssPopup(Stage popup) {
         if (popup.getScene() != null) {
             aplicarCss(popup.getScene());
