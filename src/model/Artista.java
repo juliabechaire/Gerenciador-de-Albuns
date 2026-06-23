@@ -2,11 +2,7 @@ package model;
 
 import java.io.Serializable;
 
-/**
- * Representa um artista/banda favorito do usuário.
- * O usuário adiciona manualmente nome, descrição e foto.
- * A foto pode ser buscada via Last.fm ou inserida manualmente.
- */
+
 public class Artista implements Serializable {
 
     private static final long serialVersionUID = 1L;
