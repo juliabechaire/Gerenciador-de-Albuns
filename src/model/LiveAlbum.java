@@ -32,7 +32,7 @@ public class LiveAlbum extends Musica {
     }
 
     @Override
-    public void importarDados(String dados) { this.importado = true; }
+    public void importarDados() { this.importado = true; }
 
     public String getLocalShow()         { return localShow; }
     public void   setLocalShow(String v) { this.localShow = v; }

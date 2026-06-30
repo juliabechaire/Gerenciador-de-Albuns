@@ -28,7 +28,7 @@ public class Single extends Musica {
     }
 
     @Override
-    public void importarDados(String dados) { this.importado = true; }
+    public void importarDados() { this.importado = true; }
 
     public String getEraDoAlbum()        { return eraDoAlbum; }
     public void   setEraDoAlbum(String v){ this.eraDoAlbum = v; }

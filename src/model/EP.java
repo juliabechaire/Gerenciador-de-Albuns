@@ -26,5 +26,5 @@ public class EP extends Musica {
     }
 
     @Override
-    public void importarDados(String dados) { this.importado = true; }
+    public void importarDados() { this.importado = true; }
 }

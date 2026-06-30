@@ -29,7 +29,7 @@ public class AlbumMusical extends Musica {
     }
 
     @Override
-    public void importarDados(String dados) {
+    public void importarDados() {
         this.importado = true;
     }
 

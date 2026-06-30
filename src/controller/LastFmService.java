@@ -108,7 +108,7 @@ public class LastFmService {
             }
         } catch (Exception ignored) {}
 
-        musica.importarDados("last.fm");
+        musica.importarDados();
     }
 
     
@@ -190,7 +190,7 @@ public class LastFmService {
             + URLEncoder.encode(musica.getArtista(), StandardCharsets.UTF_8) + "/_/"
             + URLEncoder.encode(musica.getNome(), StandardCharsets.UTF_8));
 
-        musica.importarDados("last.fm");
+        musica.importarDados();
     }
 
     private String fazerRequisicao(String urlStr) throws IOException {

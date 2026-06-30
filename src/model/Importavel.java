@@ -2,7 +2,7 @@ package model;
 
 public interface Importavel {
 
-    void importarDados(String dados);
+    void importarDados();
 
     boolean foiImportado();
 }
