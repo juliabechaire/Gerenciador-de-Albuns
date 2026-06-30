@@ -82,7 +82,6 @@ public class TelaMusica {
         Scene cena = new Scene(layoutRaiz, 1050, 680);
         aplicarCss(cena);
 
-        palco.setTitle("Cofre Cultural 🎵");
         palco.setScene(cena);
         palco.show();
     }
@@ -93,7 +92,7 @@ public class TelaMusica {
         sb.setStyle("-fx-background-color:#0f0f1e; -fx-min-width:160px; -fx-max-width:160px;"
                   + "-fx-border-color:#1e1e40; -fx-border-width:0 1 0 0;");
 
-        Label logo = new Label("🎵 COFRE");
+        Label logo = new Label("🎵 ABA MUSICAL");
         logo.getStyleClass().add("sidebar-logo");
         logo.setStyle("-fx-font-family:Impact; -fx-font-size:18px; -fx-text-fill:#a78bfa;"
                     + "-fx-padding:16 0 20 16;");
@@ -155,7 +154,7 @@ public class TelaMusica {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        Label lblVersao = new Label("v1.0  •  Last.fm");
+        Label lblVersao = new Label("versao-3.0");
         lblVersao.setStyle("-fx-font-size:10px; -fx-text-fill:#3d3b5e; -fx-padding:0 0 8 16;");
 
         sb.getChildren().addAll(
@@ -1054,12 +1053,12 @@ public class TelaMusica {
             } catch (ArquivoNaoEncontradoException ex) {
                 Platform.runLater(() -> {
                     voltarHome();
-                    new Alert(Alert.AlertType.ERROR, "Faixa não encontrada: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
                 });
             } catch (DadosInvalidosException ex) {
                 Platform.runLater(() -> {
                     voltarHome();
-                    new Alert(Alert.AlertType.ERROR, "Dados inválidos: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, "Dados inválidos" + ex.getMessage()).showAndWait();
                 });
             } catch (IOException ex) {
                 Platform.runLater(() -> {
