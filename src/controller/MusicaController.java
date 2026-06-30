@@ -106,7 +106,7 @@ public class MusicaController {
             int acumulado = 0;
             for (Musica m : candidatos) {
                 int dur = m.getDuracaoTotalSegundos();
-                if (dur == 0 || acumulado + dur <= limiteSegundos) {
+                if (acumulado + dur <= limiteSegundos) {
                     playlist.add(m);
                     acumulado += dur;
                 }
