@@ -80,7 +80,7 @@ public class TelaPrincipal extends Application {
         this.cerebro = new ArquivoController();
         this.tmdb = new TMDBService();
         this.openLib = new OpenLibraryService();
-        palcoPrincipal.setTitle("Cofre Cultural v1.0");
+        palcoPrincipal.setTitle("Biblioteca");
 
         layoutRaiz = new BorderPane();
         layoutRaiz.setPadding(new Insets(14));
@@ -136,7 +136,7 @@ public class TelaPrincipal extends Application {
         VBox painelTopo = new VBox(10);
         painelTopo.setPadding(new Insets(0, 0, 12, 0));
 
-        Label lblApp = new Label("🎬 Cofre Cultural");
+        Label lblApp = new Label("🎬 Biblioteca");
         lblApp.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + COR_ACENTO + ";");
 
         HBox linhaBusca = new HBox(8);

@@ -1258,6 +1258,87 @@ public class TelaMusica {
                 } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
             });
             form.getChildren().add(s);
+       } else if (m instanceof Single) {
+            TextField tEra = inputFieldVal(safe(((Single)m).getEraDoAlbum(),""));
+            form.getChildren().addAll(labelPopup("Era do Álbum:"), tEra);
+            Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
+            s.setOnAction(e -> {
+                try {
+                    String orig = m.getNome(); aplicarBase(m,tN,tA,tAn,tG,tC);
+                    ((Single)m).setEraDoAlbum(tEra.getText().trim());
+                    ctrl.editar(orig,m); voltarHome();
+                } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
+            });
+            form.getChildren().add(s);
+        } else if (m instanceof AlbumMusical) {
+            TextField tDiscos = inputFieldVal(String.valueOf(((AlbumMusical)m).getNumeroDiscos()));
+            form.getChildren().addAll(labelPopup("Número de Discos:"), tDiscos);
+            Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
+            s.setOnAction(e -> {
+                try {
+                    String orig = m.getNome(); aplicarBase(m,tN,tA,tAn,tG,tC);
+                    int discos;
+                    try { discos = Integer.parseInt(tDiscos.getText().trim()); }
+                    catch (NumberFormatException nfe) { discos = 1; }
+                    ((AlbumMusical)m).setNumeroDiscos(Math.max(1, discos));
+                    ctrl.editar(orig,m); voltarHome();
+                } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
+            });
+            form.getChildren().add(s);
+        } else if (m instanceof Single) {
+            TextField tEra = inputFieldVal(safe(((Single)m).getEraDoAlbum(),""));
+            form.getChildren().addAll(labelPopup("Era do Álbum:"), tEra);
+            Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
+            s.setOnAction(e -> {
+                try {
+                    String orig = m.getNome(); aplicarBase(m,tN,tA,tAn,tG,tC);
+                    ((Single)m).setEraDoAlbum(tEra.getText().trim());
+                    ctrl.editar(orig,m); voltarHome();
+                } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
+            });
+            form.getChildren().add(s);
+        } else if (m instanceof AlbumMusical) {
+            TextField tDiscos = inputFieldVal(String.valueOf(((AlbumMusical)m).getNumeroDiscos()));
+            form.getChildren().addAll(labelPopup("Número de Discos:"), tDiscos);
+            Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
+            s.setOnAction(e -> {
+                try {
+                    String orig = m.getNome(); aplicarBase(m,tN,tA,tAn,tG,tC);
+                    int discos;
+                    try { discos = Integer.parseInt(tDiscos.getText().trim()); }
+                    catch (NumberFormatException nfe) { discos = 1; }
+                    ((AlbumMusical)m).setNumeroDiscos(Math.max(1, discos));
+                    ctrl.editar(orig,m); voltarHome();
+                } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
+            });
+            form.getChildren().add(s);
+        } else if (m instanceof Single) {
+            TextField tEra = inputFieldVal(safe(((Single)m).getEraDoAlbum(),""));
+            form.getChildren().addAll(labelPopup("Era do Álbum:"), tEra);
+            Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
+            s.setOnAction(e -> {
+                try {
+                    String orig = m.getNome(); aplicarBase(m,tN,tA,tAn,tG,tC);
+                    ((Single)m).setEraDoAlbum(tEra.getText().trim());
+                    ctrl.editar(orig,m); voltarHome();
+                } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
+            });
+            form.getChildren().add(s);
+        } else if (m instanceof AlbumMusical) {
+            TextField tDiscos = inputFieldVal(String.valueOf(((AlbumMusical)m).getNumeroDiscos()));
+            form.getChildren().addAll(labelPopup("Número de Discos:"), tDiscos);
+            Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
+            s.setOnAction(e -> {
+                try {
+                    String orig = m.getNome(); aplicarBase(m,tN,tA,tAn,tG,tC);
+                    int discos;
+                    try { discos = Integer.parseInt(tDiscos.getText().trim()); }
+                    catch (NumberFormatException nfe) { discos = 1; }
+                    ((AlbumMusical)m).setNumeroDiscos(Math.max(1, discos));
+                    ctrl.editar(orig,m); voltarHome();
+                } catch(Exception ex){new Alert(Alert.AlertType.ERROR,ex.getMessage()).showAndWait();}
+            });
+            form.getChildren().add(s);
         } else {
             Button s = new Button("💾  Salvar"); estilizarBtn(s, GREEN, "#bbf7d0"); s.setDefaultButton(true);
             s.setOnAction(e -> {
